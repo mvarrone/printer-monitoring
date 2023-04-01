@@ -54,6 +54,97 @@ You need to manually check the full URI of each device in your network
     ]
     ```
 
+## Getting started
+
+a) Clone repository into your machine
+
+```md
+git clone https://github.com/mvarrone/printer-monitoring.git
+cd printer-monitoring
+```
+
+b) Create a virtual environment
+
+<details>
+<summary>On Windows</summary>
+1.Creating a virtual environment
+
+```md
+python -m venv venv
+```
+
+2.Activating it
+
+a) Using CMD
+
+```md
+.\venv\Scripts\activate.bat
+```
+
+b) Using PowerShell
+
+```md
+.\venv\Scripts\Activate.ps1
+```
+
+3.Installing dependencies
+
+```md
+pip install -r requirements.txt
+```
+
+4.(OPTIONAL) Deactivating the virtual environment
+
+```md
+deactivate
+```
+</details>
+
+<details>
+<summary>On Linux/Mac</summary>
+1. Creating a virtual environment
+
+```md
+python3 -m venv venv
+```
+
+2.Activating it
+
+```md
+source venv/bin/activate
+```
+
+3.Installing dependencies
+
+```md
+pip install -r requirements.txt
+```
+
+4.(OPTIONAL) Deactivating the virtual environment
+
+```md
+deactivate
+```
+</details>
+
+c) Run script
+
+<details>
+<summary>On Windows</summary>
+
+```md
+cd app && python .\main.py 
+```
+</details>
+
+<details>
+<summary>On Linux/Mac</summary>
+
+```md
+cd app && python3 .\main.py 
+```
+</details>
+
 ## Example provided
 A python3 script and a csv file were provided. See [example](https://github.com/mvarrone/printer-monitoring/tree/main/app/example)
 
