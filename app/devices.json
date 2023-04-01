@@ -1,0 +1,9 @@
+[
+    {
+        "protocol": "http",
+        "ip_address": "192.168.1.5",
+        "port": 80,
+        "path": "etc",
+        "csv_filename": "mnt_info.csv"
+    }
+]
