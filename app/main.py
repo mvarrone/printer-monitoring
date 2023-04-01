@@ -74,6 +74,7 @@ def process_data(key_list, value_list):
 
     # Clean data
     data = {key: value for key, value in my_dict.items() if key != ''}
+    # print(data)
 
     # Dump data
     # data_json = json.dumps(data, indent=2, sort_keys=True)
