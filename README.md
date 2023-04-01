@@ -55,7 +55,7 @@ You need to manually check the full URI of each device in your network
     ```
 
 ## Example provided
-A python3 script and a csv file were provided. See [example](https://github.com/mvarrone/printer-monitoring/tree/main/app/html)
+A python3 script and a csv file were provided. See [example](https://github.com/mvarrone/printer-monitoring/tree/main/app/example)
 
 * The intention of providing an example is for you to know how the data was originally downloaded from the printer device and how is processed in the python file
 
