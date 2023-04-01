@@ -15,46 +15,9 @@ For this printer in particular, a csv file is downloaded from `/etc/mnt_info.csv
 
 You need to manually check the full URI of each device in your network
 
-## Before starting
+## Starting
 
-1) This project was tested using a Gmail account so you need to create an `application password` inside Google Account settings
-
-    a) Go to [Google Account](https://myaccount.google.com/)
-
-    b) Security tab
-
-    c) How to access to Google > 2-step verification
-    
-    d) App passwords
-
-* Once there, create an entry like this:
-
-    a) Select app: Other. Name it whatever you want, for example, Python script
-
-    b) Click on the Generate button
-
-    c) Copy the 16 characters in length code that was generated
-
-    d) Paste it in the `app_password` value in the `config.json`
-
-2) Modify `sender_email` and `receiver_email` values in `config.json`
-
-3) Modify `devices.json` in order to add your network printer devices
-
-    Example:
-    ```md
-    [
-        {
-            "protocol": "http",
-            "ip_address": "192.168.1.5",
-            "port": 80,
-            "path": "etc",
-            "csv_filename": "mnt_info.csv"
-        }
-    ]
-    ```
-
-## Getting started
+### Step 1/3: Clone the repo, create a virtual environment and install dependencies
 
 a) Clone repository into your machine
 
@@ -63,7 +26,7 @@ git clone https://github.com/mvarrone/printer-monitoring.git
 cd printer-monitoring
 ```
 
-b) Create a virtual environment
+b) Create a virtual environment and install dependencies
 
 <details>
 <summary>On Windows</summary>
@@ -127,7 +90,46 @@ deactivate
 ```
 </details>
 
-c) Run script
+### Step 2/3: Some changes before running
+
+1) This project was tested using a Gmail account so you need to create an `application password` inside Google Account settings
+
+    a) Go to [Google Account](https://myaccount.google.com/)
+
+    b) Security tab
+
+    c) How to access to Google > 2-step verification
+    
+    d) App passwords
+
+* Once there, create an entry like this:
+
+    a) Select app: Other. Name it whatever you want, for example, Python script
+
+    b) Click on the Generate button
+
+    c) Copy the 16 characters in length code that was generated
+
+    d) Paste it in the `app_password` value in the `config.json`
+
+2) Modify `sender_email` and `receiver_email` values in `config.json`
+
+3) Modify `devices.json` in order to add your network printer devices
+
+    Example:
+    ```md
+    [
+        {
+            "protocol": "http",
+            "ip_address": "192.168.1.5",
+            "port": 80,
+            "path": "etc",
+            "csv_filename": "mnt_info.csv"
+        }
+    ]
+    ```
+
+### Step 3/3: Run the script
 
 <details>
 <summary>On Windows</summary>
