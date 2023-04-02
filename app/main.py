@@ -1,4 +1,5 @@
 import csv
+import math
 import sys
 
 import requests
@@ -35,7 +36,7 @@ def download_csv_file(device) -> dict:
 
         return results
 
-    print(f"Connected to {url}")
+    print(f"Connected to {url}\n")
     with open("csv/" + ip_address + "-" + csv_filename, "wb") as f:
         f.write(response.content)
 
@@ -79,38 +80,67 @@ def check_remaining_toner_level(data, configs) -> dict:
     remaining_toner_level = int(data.get("% of Life Remaining(Toner)"))
 
     THRESHOLD_WARNING_LOW_TONER_LEVEL = 50
-    if remaining_toner_level < THRESHOLD_WARNING_LOW_TONER_LEVEL:
+    if remaining_toner_level <= THRESHOLD_WARNING_LOW_TONER_LEVEL:
         body = f"Printer with toner level minor than {THRESHOLD_WARNING_LOW_TONER_LEVEL} %"
         body += f"<br>Current toner value: {remaining_toner_level} %"
-
+        reason = "Low toner level"
         try:
             send_email(
                 sender_email=configs.get("sender_email"),
                 receiver_email=configs.get("receiver_email"),
-                subject="WARNING: Low toner level",
+                subject=f"WARNING: {reason}",
                 body=body,
                 data=data,
-                reason="Low toner level")
+                reason=reason)
         except Exception as e:
-            print("-- Error trying to send an email: --", e)
             message = {
                 "error": True,
-                "error_message": str(e)
+                "error_title": "Error trying to send an email",
+                "error_message": str(e),
+                "reason_to_send_email": reason
             }
-
             return message
 
-        message = {
-            "error": False
-        }
-
+        message = {"error": False}
         return message
 
+    message = {"error": False}
+    return message
 
-def check_remaining_drum_unit_level(data, configs):
-    # remaining_drum_unit_level = data.get("% of Life Remaining(Drum Unit)")
-    # print("% of Life Remaining(Drum Unit): ", remaining_drum_unit_level)
-    pass
+
+def check_remaining_drum_unit_level(data, configs) -> dict:
+    remaining_drum_unit_level = float(
+        data.get("% of Life Remaining(Drum Unit)"))
+
+    remaining_drum_unit_level = math.trunc(remaining_drum_unit_level)
+
+    THRESHOLD_WARNING_LOW_DRUM_UNIT_LEVEL = 90
+    if remaining_drum_unit_level <= THRESHOLD_WARNING_LOW_DRUM_UNIT_LEVEL:
+        body = f"Printer with drum unit level minor than {THRESHOLD_WARNING_LOW_DRUM_UNIT_LEVEL} %"
+        body += f"<br>Current drum unit value: {remaining_drum_unit_level} %"
+        reason = "Low drum unit level"
+        try:
+            send_email(
+                sender_email=configs.get("sender_email"),
+                receiver_email=configs.get("receiver_email"),
+                subject=f"WARNING: {reason}",
+                body=body,
+                data=data,
+                reason=reason)
+        except Exception as e:
+            message = {
+                "error": True,
+                "error_title": "Error trying to send an email",
+                "error_message": str(e),
+                "reason_to_send_email": reason
+            }
+            return message
+
+        message = {"error": False}
+        return message
+
+    message = {"error": False}
+    return message
 
 
 def some_prestart_checks(devices, configs) -> None:
@@ -139,10 +169,11 @@ def main():
     # 1. Execute some checks before starting
     some_prestart_checks(devices, configs)
 
+    # 2. Each device
     for index, device in enumerate(devices, start=1):
         print(f"\nDevice {index} of {len(devices)}")
 
-        # 2. Download CSV file
+        # 2a. Download CSV file
         results = download_csv_file(device)
 
         if results.get("error"):
@@ -150,20 +181,30 @@ def main():
             # So, the next action will be try to connect to the next device in devices.json
             continue
 
-        # 3. Read CSV file
+        # 2b. Read CSV file
         data = read_csv_file(
             results.get("ip_address"),
             results.get("csv_filename")
         )
 
-        # 4. Process data
+        # 2c. Process data
         data = process_data(data)
 
-        # 5. Check remaining toner level
-        check_remaining_toner_level(data, configs)
+        # 2d. Check remaining toner level
+        message = check_remaining_toner_level(data, configs)
+        if message.get("error"):
+            print(message.get("error_title"))
+            print("Error message: ", message.get("error_message"))
+            print("Reason to send an email is: ",
+                  message.get("reason_to_send_email"), "\n")
 
-        # 6. Check remaining drum unit level
-        check_remaining_drum_unit_level(data, configs)
+        # 2e. Check remaining drum unit level
+        message = check_remaining_drum_unit_level(data, configs)
+        if message.get("error"):
+            print(message.get("error_title"))
+            print("Error message: ", message.get("error_message"))
+            print("Reason to send an email is: ",
+                  message.get("reason_to_send_email"), "\n")
 
 
 if __name__ == '__main__':

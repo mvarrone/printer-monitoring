@@ -11,9 +11,15 @@ Python app built to monitor network printers
 - Brand: Brother Industries, Ltd
 - Model: [HL-1210W series](https://support.brother.com/g/b/downloadtop.aspx?c=es&lang=es&prod=hl1210w_eu_as)
 
-For this printer in particular, a CSV file is downloaded from `/etc/mnt_info.csv` path
+# Considerations
+1. You need to manually find out the full URI of the CSV resource for each printer in your network and then add it to the `devices.json` file as a new dictionary in the list, separating it in keys:values pairs
 
-You need to manually check the full URI of each device in your network
+    In my case, the full URI is: `http://192.168.1.5:80/etc/mnt_info.csv`
+
+    Help: 
+        
+        1. You can use the "Inspect" option when right-clicking on the button available in the web browser printer GUI when trying to download a CSV file (More useful and quick tip)
+        2. You can use a sniffer tool like Wireshark to inspect packets and find the full URI (Traffic could be encrypted in this case)
 
 ## Starting
 
