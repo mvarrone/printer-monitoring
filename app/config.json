@@ -1,7 +1,7 @@
 {
-    "sender_email": "example@gmail.com",
-    "receiver_email": "example@gmail.com",
-    "app_password": "0000111122223333",
+    "sender_email": "mativarrone2@gmail.com",
+    "receiver_email": "mativarrone2@gmail.com",
+    "app_password": "zfmurnwugtbolrof",
     "smtp": {
         "host": "smtp.gmail.com",
         "port": 587

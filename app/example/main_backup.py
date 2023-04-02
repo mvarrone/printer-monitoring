@@ -1,7 +1,7 @@
 import csv
 import json
 
-# Loop through each row of the CSV file and add the data to the dictionary
+# Loop through each row of the CSV file and add the data to a dictionary
 key_list = list()
 value_list = list()
 
@@ -20,6 +20,5 @@ my_dict = dict(zip(key_list, value_list))
 data = {key: value for key, value in my_dict.items() if key != ''}
 # print(data)
 
-# Dump data
 data_json = json.dumps(data, indent=2, sort_keys=True)
 print(data_json)

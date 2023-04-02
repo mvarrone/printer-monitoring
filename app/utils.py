@@ -4,23 +4,21 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
 
-def get_devices():
+def get_devices() -> list:
     with open('devices.json', 'r') as file:
         devices = json.load(file)
 
-    # print(devices)
     return devices
 
 
-def get_configurations():
+def get_configurations() -> dict:
     with open('config.json', 'r') as file:
         configs = json.load(file)
 
-    # print(configs)
     return configs
 
 
-def send_email(sender_email, receiver_email, subject, body, data, info):
+def send_email(sender_email, receiver_email, subject, body, data, reason) -> None:
     configurations = get_configurations()
 
     smtp_host = configurations.get("smtp").get("host")
@@ -58,4 +56,4 @@ def send_email(sender_email, receiver_email, subject, body, data, info):
         text = message.as_string()
         session.sendmail(sender_email, receiver_email, text)
 
-    print(f'Email sent. Reason: {info}')
+    print(f'Email sent. Reason: {reason}')
