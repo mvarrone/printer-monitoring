@@ -19,6 +19,12 @@ Python app built to monitor network printers
     Help: 
         
         1. You can use the "Inspect" option when right-clicking on the button available in the web browser printer GUI when trying to download a CSV file (More useful and quick tip)
+        a. Go to the Network tab and now left-click the button.
+        b. Close the window that just opened
+        c. Under the Name column, click in the csv file and go to the Headers tab
+        d. You will find the full URI in the Request URL field
+    or
+
         2. You can use a sniffer tool like Wireshark to inspect packets and find the full URI (Traffic could be encrypted in this case)
 
 ## Starting
