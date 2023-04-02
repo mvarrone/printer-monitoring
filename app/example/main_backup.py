@@ -22,3 +22,6 @@ data = {key: value for key, value in my_dict.items() if key != ''}
 
 data_json = json.dumps(data, indent=2, sort_keys=True)
 print(data_json)
+
+with open("results.json", "w") as f:
+    f.write(data_json)

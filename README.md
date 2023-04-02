@@ -1,6 +1,6 @@
 # Printer monitor app
 
-Python app built to monitor values from network printers
+Python app built to monitor network printers
 
 ## Software used
 
@@ -11,7 +11,7 @@ Python app built to monitor values from network printers
 - Brand: Brother Industries, Ltd
 - Model: [HL-1210W series](https://support.brother.com/g/b/downloadtop.aspx?c=es&lang=es&prod=hl1210w_eu_as)
 
-For this printer in particular, a csv file is downloaded from `/etc/mnt_info.csv` path
+For this printer in particular, a CSV file is downloaded from `/etc/mnt_info.csv` path
 
 You need to manually check the full URI of each device in your network
 
@@ -148,7 +148,8 @@ cd app && python3 .\main.py
 </details>
 
 ## Example provided
-A python3 script and a csv file were provided. See [example](https://github.com/mvarrone/printer-monitoring/tree/main/app/example)
+A Python 3 script and a CSV file were provided. See [example](https://github.com/mvarrone/printer-monitoring/tree/main/app/example)
+Also, a `results.json` was recently provided
 
 * The intention of providing an example is for you to know how the data was originally downloaded from the printer device and how is processed in the python file
 
@@ -156,7 +157,7 @@ A python3 script and a csv file were provided. See [example](https://github.com/
     - there is no printer available in your network
     - the printer exports some other format file
     - the printer does not provide a way to export data and you want to test it anyway
-    - the csv file has not the same structure
+    - the CSV file has not the same structure
 
 ## Contributing
 Contributions to this project are welcome. If you find any issues or have suggestions for improvement, feel free to open an issue or submit a pull request
