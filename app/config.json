@@ -1,7 +1,9 @@
 {
-    "sender_email": "mativarrone2@gmail.com",
-    "receiver_email": "mativarrone2@gmail.com",
-    "app_password": "yhzemmkagcewvdmz",
+    "email_addresses": {
+        "sender": "mativarrone2@gmail.com",
+        "receiver": "mativarrone2@gmail.com"
+    },
+    "app_password": "yuxagvulkrhastup",
     "smtp": {
         "host": "smtp.gmail.com",
         "port": 587

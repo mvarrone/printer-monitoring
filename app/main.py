@@ -85,11 +85,13 @@ def check_remaining_toner_level(data, configs) -> dict:
         body = f"Printer with toner level minor than {THRESHOLD_WARNING_LOW_TONER_LEVEL} %"
         body += f"<br>Current toner value: {remaining_toner_level} %"
         reason = "Low toner level"
+        ip_address = data.get("IP Address")
+
         try:
             send_email(
-                sender_email=configs.get("sender_email"),
-                receiver_email=configs.get("receiver_email"),
-                subject=f"WARNING: {reason}",
+                sender_email=configs.get("email_addresses").get("sender"),
+                receiver_email=configs.get("email_addresses").get("receiver"),
+                subject=f"({ip_address}) WARNING: {reason}",
                 body=body,
                 data=data,
                 reason=reason)
@@ -121,11 +123,13 @@ def check_remaining_drum_unit_level(data, configs) -> dict:
         body = f"Printer with drum unit level minor than {THRESHOLD_WARNING_LOW_DRUM_UNIT_LEVEL} %"
         body += f"<br>Current drum unit value: {remaining_drum_unit_level} %"
         reason = "Low drum unit level"
+        ip_address = data.get("IP Address")
+
         try:
             send_email(
-                sender_email=configs.get("sender_email"),
-                receiver_email=configs.get("receiver_email"),
-                subject=f"WARNING: {reason}",
+                sender_email=configs.get("email_addresses").get("sender"),
+                receiver_email=configs.get("email_addresses").get("receiver"),
+                subject=f"({ip_address}) WARNING: {reason}",
                 body=body,
                 data=data,
                 reason=reason)
@@ -154,11 +158,13 @@ def check_remaining_life_drum_unit(data, configs) -> dict:
         body = f"Printer with life drum unit value minor than {THRESHOLD_WARNING_LOW_LIFE_DRUM_UNIT}"
         body += f"<br>Current life drum unit value: {remaining_life_drum_unit}"
         reason = "Low life drum unit level"
+        ip_address = data.get("IP Address")
+
         try:
             send_email(
-                sender_email=configs.get("sender_email"),
-                receiver_email=configs.get("receiver_email"),
-                subject=f"WARNING: {reason}",
+                sender_email=configs.get("email_addresses").get("sender"),
+                receiver_email=configs.get("email_addresses").get("receiver"),
+                subject=f"({ip_address}) WARNING: {reason}",
                 body=body,
                 data=data,
                 reason=reason)
@@ -187,12 +193,12 @@ def some_prestart_checks(devices, configs) -> None:
         print("app_password value needs to be generated using Google Account settings")
         sys.exit(1)
 
-    if configs.get("sender_email") == "example@gmail.com":
-        print("sender_email value needs to be configured in config.json")
+    if configs.get("email_addresses").get("sender") == "example@gmail.com":
+        print("Sender email needs to be set in config.json")
         sys.exit(1)
 
-    if configs.get("receiver_email") == "example@gmail.com":
-        print("receiver_email value needs to be configured in config.json")
+    if configs.get("email_addresses").get("receiver") == "example@gmail.com":
+        print("Receiver email needs to be set in config.json")
         sys.exit(1)
 
 
