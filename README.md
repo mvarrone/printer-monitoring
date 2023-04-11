@@ -12,24 +12,37 @@ Python app built to monitor network printers
 - Model: [HL-1210W series](https://support.brother.com/g/b/downloadtop.aspx?c=es&lang=es&prod=hl1210w_eu_as)
 
 # Considerations
-1. You need to manually find out the full URI of the CSV resource for each printer in your network and then add it to the `devices.json` file as a new dictionary in the list, separating it in keys:values pairs
+1. About the full URI
 
-    In my case, the full URI is: `http://192.168.1.5:80/etc/mnt_info.csv`
+    You need to manually find out the full URI of the CSV resource for each printer in your network and then add it to the `devices.json` file as a new dictionary in the list, separating it in keys: values pairs
 
-    Help: 
+    * In this case, the full URI for the printer tested was: `http://192.168.1.5:80/etc/mnt_info.csv`
+
+    Tips: 
         
-        1. You can use the "Inspect" option when right-clicking on the button available in the web browser printer GUI when trying to download a CSV file (More useful and quick tip)
-        a. Go to the Network tab and now left-click the button.
-        b. Close the window that just opened
-        c. Under the Name column, click in the csv file and go to the Headers tab
-        d. You will find the full URI in the Request URL field
+    1. Inspecting web
+    
+        You can use the "Inspect" option when right-clicking on the button available in the web browser printer GUI when trying to download a CSV file (More useful and quicker tip)
+
+        Steps:
+
+        a) Go to the Network tab and now left-click the button.
+
+        b) Close the window that just opened
+
+        c) Under the Name column, click in the csv file and go to the Headers tab
+
+        d) You will find the full URI in the Request URL field
+
     or
 
-        2. You can use a sniffer tool like Wireshark to inspect packets and find the full URI (Traffic could be encrypted in this case)
+    2. Using a sniffer tool
+    
+        You can use a sniffer tool like Wireshark to inspect packets and find the full URI (Traffic could be encrypted in this situation)
 
 ## Starting
 
-### Step 1/3: Clone the repo, create a virtual environment and install dependencies
+### Step 1/3: Clone the repo, create/activate a virtual environment and install dependencies
 
 a) Clone repository into your machine
 

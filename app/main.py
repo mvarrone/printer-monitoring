@@ -208,7 +208,7 @@ def main():
     current_dateTime = datetime.now()
 
     with open("log.log", "a") as f:
-        f.write(f"Ejecucion: {current_dateTime}\n")
+        f.write(f"Executed at: {current_dateTime}\n")
 
     # 0. Load data
     devices = get_devices()
