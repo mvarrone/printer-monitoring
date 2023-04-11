@@ -4,6 +4,7 @@ import sys
 
 import requests
 from utils import get_configurations, get_devices, send_email
+from datetime import datetime
 
 
 def download_csv_file(device) -> dict:
@@ -203,6 +204,12 @@ def some_prestart_checks(devices, configs) -> None:
 
 
 def main():
+
+    current_dateTime = datetime.now()
+
+    with open("log.log", "a") as f:
+        f.write(f"Ejecucion: {current_dateTime}\n")
+
     # 0. Load data
     devices = get_devices()
     configs = get_configurations()
