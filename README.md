@@ -8,15 +8,23 @@ Python app built to monitor network printers
 
 ## Tested on
 
-- Brand: Brother Industries, Ltd
-- Model: [HL-1210W series](https://support.brother.com/g/b/downloadtop.aspx?c=es&lang=es&prod=hl1210w_eu_as)
+1. 
+    - Brand: Brother Industries, Ltd
+    - Model: [HL-1210W series](https://support.brother.com/g/b/downloadtop.aspx?c=es&lang=es&prod=hl1210w_eu_as)
+
+---
+
+2. 
+    - Brand: Brother Industries, Ltd
+    - Model: [DCP-1610NW series](https://support.brother.com/g/b/downloadtop.aspx?c=es&lang=es&prod=dcp1610w_eu_as)
 
 # Considerations
 1. About the full URI
 
     You need to manually find out the full URI of the CSV resource for each printer in your network and then add it to the `devices.json` file as a new dictionary in the list, separating it in keys: values pairs
 
-    * In this case, the full URI for the printer tested was: `http://192.168.1.5:80/etc/mnt_info.csv`
+    * In this case, the full URI for the tested printers were: `http://192.168.1.5:80/etc/mnt_info.csv` and
+`http://192.168.120.17:80/etc/mnt_info.csv`
 
     Tips: 
         

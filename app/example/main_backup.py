@@ -5,7 +5,8 @@ import json
 key_list = list()
 value_list = list()
 
-with open("mnt_info.csv", newline='') as csvfile:
+filename = "mnt_info_casa_nico"
+with open(f"{filename}.csv", newline='') as csvfile:
     reader = csv.reader(csvfile)
     for key, value in enumerate(reader):
         if key == 0:
@@ -23,5 +24,5 @@ data = {key: value for key, value in my_dict.items() if key != ''}
 data_json = json.dumps(data, indent=2, sort_keys=True)
 print(data_json)
 
-with open("results.json", "w") as f:
+with open(f"results-{filename}.json", "w") as f:
     f.write(data_json)
