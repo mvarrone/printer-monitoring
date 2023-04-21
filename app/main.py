@@ -101,15 +101,27 @@ def pre_send_email(
     return message
 
 
-def check_remaining_toner_level(data, configs) -> dict:
+def check_remaining_toner_level(data, configs, devices, index) -> dict:
+    printer_brand = devices[index].get("brand")
     ip_address = data.get("IP Address")
 
-    FEATURE_1 = "% of Life Remaining(Toner)"
+    # FEATURE_1 = "% of Life Remaining(Toner)"
+    # THRESHOLD_ERROR_LOW_TONER_LEVEL = 0
+    # THRESHOLD_CRITICAL_LOW_TONER_LEVEL = 10
+    # THRESHOLD_WARNING_LOW_TONER_LEVEL = 50
+
+    features = configs.get("brands").get(printer_brand).get("features")
+    FEATURE_1 = features.get("FEATURE_1")
     remaining_toner_level = int(data.get(FEATURE_1))
 
-    THRESHOLD_ERROR_LOW_TONER_LEVEL = 0
-    THRESHOLD_CRITICAL_LOW_TONER_LEVEL = 10
-    THRESHOLD_WARNING_LOW_TONER_LEVEL = 50
+    thresholds = configs.get("brands").get(printer_brand).get("thresholds")
+    THRESHOLD_ERROR_LOW_TONER_LEVEL = thresholds.get("THRESHOLD_ERROR_LOW_TONER_LEVEL")
+    THRESHOLD_CRITICAL_LOW_TONER_LEVEL = thresholds.get(
+        "THRESHOLD_CRITICAL_LOW_TONER_LEVEL"
+    )
+    THRESHOLD_WARNING_LOW_TONER_LEVEL = thresholds.get(
+        "THRESHOLD_WARNING_LOW_TONER_LEVEL"
+    )
 
     if remaining_toner_level == THRESHOLD_ERROR_LOW_TONER_LEVEL:
         body = f"Printer toner level is 0 %"
@@ -267,8 +279,8 @@ def main():
     some_prestart_checks(devices, configs)
 
     # 2. Each device
-    for index, device in enumerate(devices, start=1):
-        print(f"\nDevice {index} of {len(devices)}")
+    for index, device in enumerate(devices):
+        print(f"\nDevice {index+1} of {len(devices)}")
 
         # 2a. Download CSV file
         results = download_csv_file(device)
@@ -285,7 +297,7 @@ def main():
         data = process_data(data)
 
         # 2d. Check remaining toner level
-        message = check_remaining_toner_level(data, configs)
+        message = check_remaining_toner_level(data, configs, devices, index)
         if message.get("error"):
             display_error(message)
 

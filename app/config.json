@@ -7,5 +7,19 @@
     "smtp": {
         "host": "smtp.gmail.com",
         "port": 587
+    },
+    "brands": {
+        "Brother": {
+            "features": {
+                "FEATURE_1": "% of Life Remaining(Toner)",
+                "FEATURE_2": "% of Life Remaining(Drum Unit)",
+                "FEATURE_3": "Remaining Life(Drum Unit)"
+            },
+            "thresholds": {
+                "THRESHOLD_ERROR_LOW_TONER_LEVEL": 0,
+                "THRESHOLD_CRITICAL_LOW_TONER_LEVEL": 10,
+                "THRESHOLD_WARNING_LOW_TONER_LEVEL": 50
+            }
+        }
     }
 }
