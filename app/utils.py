@@ -18,7 +18,9 @@ def get_configurations() -> dict:
     return configs
 
 
-def send_email(sender_email, receiver_email, subject, body, data, reason) -> None:
+def send_email(
+    sender_email, receiver_email, subject, body, data, reason, alert_type
+) -> None:
     config_data = get_configurations()
 
     smtp_host = config_data.get("smtp").get("host")
@@ -55,4 +57,4 @@ def send_email(sender_email, receiver_email, subject, body, data, reason) -> Non
         text = message.as_string()
         session.sendmail(sender_email, receiver_email, text)
 
-    print(f"Email sent. Reason: {reason}")
+    print(f"Email sent. Reason: {reason}. Alert type: {alert_type}")

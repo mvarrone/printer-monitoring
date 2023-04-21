@@ -70,41 +70,81 @@ def process_data(data) -> dict:
     return data
 
 
+def pre_send_email(
+    body, reason, subject, remaining_toner_level, configs, data, alert_type
+):
+    body += f"<br>Current toner value: {remaining_toner_level} %"
+
+    sender_email = configs.get("email_addresses").get("sender")
+    receiver_email = configs.get("email_addresses").get("receiver")
+
+    try:
+        send_email(
+            sender_email=sender_email,
+            receiver_email=receiver_email,
+            subject=subject,
+            body=body,
+            data=data,
+            reason=reason,
+            alert_type=alert_type,
+        )
+    except Exception as e:
+        message = {
+            "error": True,
+            "error_title": "Error trying to send an email",
+            "error_message": str(e),
+            "reason_to_send_email": reason,
+        }
+        return message
+
+    message = {"error": False}
+    return message
+
+
 def check_remaining_toner_level(data, configs) -> dict:
+    ip_address = data.get("IP Address")
+
     FEATURE_1 = "% of Life Remaining(Toner)"
     remaining_toner_level = int(data.get(FEATURE_1))
+    remaining_toner_level = 62
 
+    THRESHOLD_ERROR_LOW_TONER_LEVEL = 0
+    THRESHOLD_CRITICAL_LOW_TONER_LEVEL = 10
     THRESHOLD_WARNING_LOW_TONER_LEVEL = 50
+
+    if remaining_toner_level == THRESHOLD_ERROR_LOW_TONER_LEVEL:
+        body = f"Printer toner level is 0 %"
+        reason = "Empty toner level"
+        subject = f"({ip_address}) ERROR: {reason}"
+        alert_type = "ERROR"
+
+        message = pre_send_email(
+            body, reason, subject, remaining_toner_level, configs, data, alert_type
+        )
+        return message
+
+    if remaining_toner_level <= THRESHOLD_CRITICAL_LOW_TONER_LEVEL:
+        body = f"Printer with toner level minor than {THRESHOLD_CRITICAL_LOW_TONER_LEVEL} %"
+        reason = "Very low toner level"
+        subject = f"({ip_address}) CRITICAL: {reason}"
+        alert_type = "CRITICAL"
+
+        message = pre_send_email(
+            body, reason, subject, remaining_toner_level, configs, data, alert_type
+        )
+        return message
+
     if remaining_toner_level <= THRESHOLD_WARNING_LOW_TONER_LEVEL:
         body = (
             f"Printer with toner level minor than {THRESHOLD_WARNING_LOW_TONER_LEVEL} %"
         )
-        body += f"<br>Current toner value: {remaining_toner_level} %"
-        reason = "Low toner level"
-        ip_address = data.get("IP Address")
-        sender_email = configs.get("email_addresses").get("sender")
-        receiver_email = configs.get("email_addresses").get("receiver")
+        reason = "Middle toner level"
         subject = f"({ip_address}) WARNING: {reason}"
+        alert_type = "WARNING"
 
-        try:
-            send_email(
-                sender_email=sender_email,
-                receiver_email=receiver_email,
-                subject=subject,
-                body=body,
-                data=data,
-                reason=reason,
-            )
-        except Exception as e:
-            message = {
-                "error": True,
-                "error_title": "Error trying to send an email",
-                "error_message": str(e),
-                "reason_to_send_email": reason,
-            }
-            return message
-
-        message = {"error": False}
+        message = pre_send_email(
+            body, reason, subject, remaining_toner_level, configs, data, alert_type
+        )
         return message
 
     message = {"error": False}
@@ -152,14 +192,14 @@ def check_remaining_drum_unit_level(data, configs) -> dict:
     return message
 
 
-def check_remaining_life_drum_unit(data, configs) -> dict:
+def check_remaining_life_drum_unit_level(data, configs) -> dict:
     FEATURE_3 = "Remaining Life(Drum Unit)"
-    remaining_life_drum_unit = int(data.get(FEATURE_3))
+    remaining_life_drum_unit_level = int(data.get(FEATURE_3))
 
     THRESHOLD_WARNING_LOW_LIFE_DRUM_UNIT = 8000
-    if remaining_life_drum_unit <= THRESHOLD_WARNING_LOW_LIFE_DRUM_UNIT:
+    if remaining_life_drum_unit_level <= THRESHOLD_WARNING_LOW_LIFE_DRUM_UNIT:
         body = f"Printer with life drum unit value minor than {THRESHOLD_WARNING_LOW_LIFE_DRUM_UNIT}"
-        body += f"<br>Current life drum unit value: {remaining_life_drum_unit}"
+        body += f"<br>Current life drum unit value: {remaining_life_drum_unit_level}"
         reason = "Low life drum unit level"
         ip_address = data.get("IP Address")
         sender_email = configs.get("email_addresses").get("sender")
@@ -209,6 +249,16 @@ def some_prestart_checks(devices, configs) -> None:
         sys.exit(1)
 
 
+def display_error(message):
+    print(message.get("error_title"))
+    print("Error message: ", message.get("error_message"))
+    print(
+        "Reason to send an email is: ",
+        message.get("reason_to_send_email"),
+        "\n",
+    )
+
+
 def main():
     # 0. Load data
     devices = get_devices()
@@ -226,7 +276,7 @@ def main():
 
         if results.get("error"):
             # There was an error trying to connect to the device
-            # So, the next action will be try to connect to the next device in devices.json
+            # So, script will skip this device and will try to connect to the next device in devices.json
             continue
 
         # 2b. Read CSV file
@@ -238,35 +288,17 @@ def main():
         # 2d. Check remaining toner level
         message = check_remaining_toner_level(data, configs)
         if message.get("error"):
-            print(message.get("error_title"))
-            print("Error message: ", message.get("error_message"))
-            print(
-                "Reason to send an email is: ",
-                message.get("reason_to_send_email"),
-                "\n",
-            )
+            display_error(message)
 
-        # 2e. Check remaining drum unit level
-        message = check_remaining_drum_unit_level(data, configs)
-        if message.get("error"):
-            print(message.get("error_title"))
-            print("Error message: ", message.get("error_message"))
-            print(
-                "Reason to send an email is: ",
-                message.get("reason_to_send_email"),
-                "\n",
-            )
+        # # 2e. Check remaining drum unit level
+        # message = check_remaining_drum_unit_level(data, configs)
+        # if message.get("error"):
+        #     display_error(message)
 
-        # 2f. Check remaining life drum unit level
-        message = check_remaining_life_drum_unit(data, configs)
-        if message.get("error"):
-            print(message.get("error_title"))
-            print("Error message: ", message.get("error_message"))
-            print(
-                "Reason to send an email is: ",
-                message.get("reason_to_send_email"),
-                "\n",
-            )
+        # # 2f. Check remaining life drum unit level
+        # message = check_remaining_life_drum_unit_level(data, configs)
+        # if message.get("error"):
+        #     display_error(message)
 
 
 if __name__ == "__main__":
