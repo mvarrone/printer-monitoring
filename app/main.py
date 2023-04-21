@@ -106,7 +106,6 @@ def check_remaining_toner_level(data, configs) -> dict:
 
     FEATURE_1 = "% of Life Remaining(Toner)"
     remaining_toner_level = int(data.get(FEATURE_1))
-    remaining_toner_level = 62
 
     THRESHOLD_ERROR_LOW_TONER_LEVEL = 0
     THRESHOLD_CRITICAL_LOW_TONER_LEVEL = 10
