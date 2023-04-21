@@ -5,16 +5,17 @@ import sys
 import requests
 from utils import get_configurations, get_devices, send_email
 from datetime import datetime
+import time
 
 
 def download_csv_file(device) -> dict:
-    protocol = device.get('protocol')
-    ip_address = device.get('ip_address')
-    port = device.get('port')
-    path = device.get('path')
-    csv_filename = device.get('csv_filename')
+    protocol = device.get("protocol")
+    ip_address = device.get("ip_address")
+    port = device.get("port")
+    path = device.get("path")
+    csv_filename = device.get("csv_filename")
 
-    url = f"{protocol}://{ip_address}:{port}/{path}/{csv_filename}"
+    url = f"{protocol}://{ip_address}:{port}{path}{csv_filename}"
 
     try:
         print(f"\nConnecting to {url}...")
@@ -29,11 +30,7 @@ def download_csv_file(device) -> dict:
         print(f"\nException message: {exc_msg}")
         print(f"\nException args: {exc_args}\n")
 
-        results = {
-            "error": True,
-            "ip_address": "",
-            "csv_filename": ""
-        }
+        results = {"error": True, "ip_address": "", "csv_filename": ""}
 
         return results
 
@@ -41,17 +38,13 @@ def download_csv_file(device) -> dict:
     with open("csv/" + ip_address + "-" + csv_filename, "wb") as f:
         f.write(response.content)
 
-    results = {
-        "error": False,
-        "ip_address": ip_address,
-        "csv_filename": csv_filename
-    }
+    results = {"error": False, "ip_address": ip_address, "csv_filename": csv_filename}
 
     return results
 
 
 def read_csv_file(ip_address, csv_filename) -> dict:
-    with open("csv/" + ip_address + "-" + csv_filename, newline='') as csvfile:
+    with open("csv/" + ip_address + "-" + csv_filename, newline="") as csvfile:
         reader = csv.reader(csvfile)
         key_list = list()
         value_list = list()
@@ -68,7 +61,7 @@ def read_csv_file(ip_address, csv_filename) -> dict:
 
 def process_data(data) -> dict:
     # Clean data
-    data = {key: value for key, value in data.items() if key != ''}
+    data = {key: value for key, value in data.items() if key != ""}
     # print(data)
 
     # data_json = json.dumps(data, indent=2, sort_keys=True)
@@ -83,25 +76,31 @@ def check_remaining_toner_level(data, configs) -> dict:
 
     THRESHOLD_WARNING_LOW_TONER_LEVEL = 50
     if remaining_toner_level <= THRESHOLD_WARNING_LOW_TONER_LEVEL:
-        body = f"Printer with toner level minor than {THRESHOLD_WARNING_LOW_TONER_LEVEL} %"
+        body = (
+            f"Printer with toner level minor than {THRESHOLD_WARNING_LOW_TONER_LEVEL} %"
+        )
         body += f"<br>Current toner value: {remaining_toner_level} %"
         reason = "Low toner level"
         ip_address = data.get("IP Address")
+        sender_email = configs.get("email_addresses").get("sender")
+        receiver_email = configs.get("email_addresses").get("receiver")
+        subject = f"({ip_address}) WARNING: {reason}"
 
         try:
             send_email(
-                sender_email=configs.get("email_addresses").get("sender"),
-                receiver_email=configs.get("email_addresses").get("receiver"),
-                subject=f"({ip_address}) WARNING: {reason}",
+                sender_email=sender_email,
+                receiver_email=receiver_email,
+                subject=subject,
                 body=body,
                 data=data,
-                reason=reason)
+                reason=reason,
+            )
         except Exception as e:
             message = {
                 "error": True,
                 "error_title": "Error trying to send an email",
                 "error_message": str(e),
-                "reason_to_send_email": reason
+                "reason_to_send_email": reason,
             }
             return message
 
@@ -114,8 +113,7 @@ def check_remaining_toner_level(data, configs) -> dict:
 
 def check_remaining_drum_unit_level(data, configs) -> dict:
     FEATURE_2 = "% of Life Remaining(Drum Unit)"
-    remaining_drum_unit_level = float(
-        data.get(FEATURE_2))
+    remaining_drum_unit_level = float(data.get(FEATURE_2))
 
     remaining_drum_unit_level = math.trunc(remaining_drum_unit_level)
 
@@ -125,21 +123,25 @@ def check_remaining_drum_unit_level(data, configs) -> dict:
         body += f"<br>Current drum unit value: {remaining_drum_unit_level} %"
         reason = "Low drum unit level"
         ip_address = data.get("IP Address")
+        sender_email = configs.get("email_addresses").get("sender")
+        receiver_email = configs.get("email_addresses").get("receiver")
+        subject = f"({ip_address}) WARNING: {reason}"
 
         try:
             send_email(
-                sender_email=configs.get("email_addresses").get("sender"),
-                receiver_email=configs.get("email_addresses").get("receiver"),
-                subject=f"({ip_address}) WARNING: {reason}",
+                sender_email=sender_email,
+                receiver_email=receiver_email,
+                subject=subject,
                 body=body,
                 data=data,
-                reason=reason)
+                reason=reason,
+            )
         except Exception as e:
             message = {
                 "error": True,
                 "error_title": "Error trying to send an email",
                 "error_message": str(e),
-                "reason_to_send_email": reason
+                "reason_to_send_email": reason,
             }
             return message
 
@@ -160,21 +162,25 @@ def check_remaining_life_drum_unit(data, configs) -> dict:
         body += f"<br>Current life drum unit value: {remaining_life_drum_unit}"
         reason = "Low life drum unit level"
         ip_address = data.get("IP Address")
+        sender_email = configs.get("email_addresses").get("sender")
+        receiver_email = configs.get("email_addresses").get("receiver")
+        subject = f"({ip_address}) WARNING: {reason}"
 
         try:
             send_email(
-                sender_email=configs.get("email_addresses").get("sender"),
-                receiver_email=configs.get("email_addresses").get("receiver"),
-                subject=f"({ip_address}) WARNING: {reason}",
+                sender_email=sender_email,
+                receiver_email=receiver_email,
+                subject=subject,
                 body=body,
                 data=data,
-                reason=reason)
+                reason=reason,
+            )
         except Exception as e:
             message = {
                 "error": True,
                 "error_title": "Error trying to send an email",
                 "error_message": str(e),
-                "reason_to_send_email": reason
+                "reason_to_send_email": reason,
             }
             return message
 
@@ -190,26 +196,20 @@ def some_prestart_checks(devices, configs) -> None:
         print("File devices.json needs to be configured with at least one device")
         sys.exit(1)
 
-    if configs.get("app_password") == "0000111122223333":
+    if configs.get("app_password") == "to_be_completed":
         print("app_password value needs to be generated using Google Account settings")
         sys.exit(1)
 
-    if configs.get("email_addresses").get("sender") == "example@gmail.com":
+    if configs.get("email_addresses").get("sender") == "to_be_completed@gmail.com":
         print("Sender email needs to be set in config.json")
         sys.exit(1)
 
-    if configs.get("email_addresses").get("receiver") == "example@gmail.com":
+    if configs.get("email_addresses").get("receiver") == "to_be_completed@gmail.com":
         print("Receiver email needs to be set in config.json")
         sys.exit(1)
 
 
 def main():
-
-    current_dateTime = datetime.now()
-
-    with open("log.log", "a") as f:
-        f.write(f"Executed at: {current_dateTime}\n")
-
     # 0. Load data
     devices = get_devices()
     configs = get_configurations()
@@ -230,10 +230,7 @@ def main():
             continue
 
         # 2b. Read CSV file
-        data = read_csv_file(
-            results.get("ip_address"),
-            results.get("csv_filename")
-        )
+        data = read_csv_file(results.get("ip_address"), results.get("csv_filename"))
 
         # 2c. Process data
         data = process_data(data)
@@ -243,25 +240,38 @@ def main():
         if message.get("error"):
             print(message.get("error_title"))
             print("Error message: ", message.get("error_message"))
-            print("Reason to send an email is: ",
-                  message.get("reason_to_send_email"), "\n")
+            print(
+                "Reason to send an email is: ",
+                message.get("reason_to_send_email"),
+                "\n",
+            )
 
         # 2e. Check remaining drum unit level
         message = check_remaining_drum_unit_level(data, configs)
         if message.get("error"):
             print(message.get("error_title"))
             print("Error message: ", message.get("error_message"))
-            print("Reason to send an email is: ",
-                  message.get("reason_to_send_email"), "\n")
+            print(
+                "Reason to send an email is: ",
+                message.get("reason_to_send_email"),
+                "\n",
+            )
 
         # 2f. Check remaining life drum unit level
         message = check_remaining_life_drum_unit(data, configs)
         if message.get("error"):
             print(message.get("error_title"))
             print("Error message: ", message.get("error_message"))
-            print("Reason to send an email is: ",
-                  message.get("reason_to_send_email"), "\n")
+            print(
+                "Reason to send an email is: ",
+                message.get("reason_to_send_email"),
+                "\n",
+            )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
+    start_time = time.time()
+
     main()
+
+    print(f"\nTotal execution time: {round(time.time() - start_time, 2)} s")

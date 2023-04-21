@@ -3,14 +3,7 @@
         "protocol": "http",
         "ip_address": "192.168.1.5",
         "port": 80,
-        "path": "etc",
-        "csv_filename": "mnt_info.csv"
-    },
-    {
-        "protocol": "http",
-        "ip_address": "192.168.120.17",
-        "port": 80,
-        "path": "etc",
+        "path": "/etc/",
         "csv_filename": "mnt_info.csv"
     }
 ]
