@@ -114,8 +114,8 @@ def check_remaining_toner_level(data, configs) -> dict:
     if remaining_toner_level == THRESHOLD_ERROR_LOW_TONER_LEVEL:
         body = f"Printer toner level is 0 %"
         reason = "Empty toner level"
-        subject = f"({ip_address}) ERROR: {reason}"
         alert_type = "ERROR"
+        subject = f"({ip_address}) {alert_type}: {reason}"
 
         message = pre_send_email(
             body, reason, subject, remaining_toner_level, configs, data, alert_type
@@ -125,8 +125,8 @@ def check_remaining_toner_level(data, configs) -> dict:
     if remaining_toner_level <= THRESHOLD_CRITICAL_LOW_TONER_LEVEL:
         body = f"Printer with toner level minor than {THRESHOLD_CRITICAL_LOW_TONER_LEVEL} %"
         reason = "Very low toner level"
-        subject = f"({ip_address}) CRITICAL: {reason}"
         alert_type = "CRITICAL"
+        subject = f"({ip_address}) {alert_type}: {reason}"
 
         message = pre_send_email(
             body, reason, subject, remaining_toner_level, configs, data, alert_type
@@ -138,8 +138,8 @@ def check_remaining_toner_level(data, configs) -> dict:
             f"Printer with toner level minor than {THRESHOLD_WARNING_LOW_TONER_LEVEL} %"
         )
         reason = "Middle toner level"
-        subject = f"({ip_address}) WARNING: {reason}"
         alert_type = "WARNING"
+        subject = f"({ip_address}) {alert_type}: {reason}"
 
         message = pre_send_email(
             body, reason, subject, remaining_toner_level, configs, data, alert_type
