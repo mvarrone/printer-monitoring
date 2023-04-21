@@ -114,7 +114,9 @@ def check_remaining_toner_level(data, configs, devices, index) -> dict:
     FEATURE_1 = features.get("FEATURE_1")
     remaining_toner_level = int(data.get(FEATURE_1))
 
-    thresholds = configs.get("brands").get(printer_brand).get("thresholds")
+    thresholds = (
+        configs.get("brands").get(printer_brand).get("thresholds").get("FEATURE_1")
+    )
     THRESHOLD_ERROR_LOW_TONER_LEVEL = thresholds.get("THRESHOLD_ERROR_LOW_TONER_LEVEL")
     THRESHOLD_CRITICAL_LOW_TONER_LEVEL = thresholds.get(
         "THRESHOLD_CRITICAL_LOW_TONER_LEVEL"

@@ -16,9 +16,11 @@
                 "FEATURE_3": "Remaining Life(Drum Unit)"
             },
             "thresholds": {
-                "THRESHOLD_ERROR_LOW_TONER_LEVEL": 0,
-                "THRESHOLD_CRITICAL_LOW_TONER_LEVEL": 10,
-                "THRESHOLD_WARNING_LOW_TONER_LEVEL": 50
+                "FEATURE_1": {
+                    "THRESHOLD_ERROR_LOW_TONER_LEVEL": 0,
+                    "THRESHOLD_CRITICAL_LOW_TONER_LEVEL": 10,
+                    "THRESHOLD_WARNING_LOW_TONER_LEVEL": 50
+                }
             }
         }
     }

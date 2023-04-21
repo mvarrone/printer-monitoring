@@ -6,13 +6,5 @@
         "path": "/etc/",
         "csv_filename": "mnt_info.csv",
         "brand": "Brother"
-    },
-    {
-        "protocol": "http",
-        "ip_address": "192.168.1.99",
-        "port": 80,
-        "path": "/etc/",
-        "csv_filename": "mnt_info.csv",
-        "brand": "Xerox"
     }
 ]
