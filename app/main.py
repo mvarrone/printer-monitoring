@@ -18,7 +18,7 @@ def download_csv_file(device) -> dict:
     url = f"{protocol}://{ip_address}:{port}{path}{csv_filename}"
 
     try:
-        print(f"\nConnecting to {url}...")
+        print(f"Connecting to {url}...")
         response = requests.get(url)
     except Exception as e:
         exc_type = type(e).__name__
@@ -33,7 +33,7 @@ def download_csv_file(device) -> dict:
         results = {"error": True, "ip_address": "", "csv_filename": ""}
         return results
 
-    print(f"Connected to {url}\n")
+    print(f"Connected to {url}")
     with open("csv/" + ip_address + "-" + csv_filename, "wb") as f:
         f.write(response.content)
 
@@ -313,13 +313,8 @@ def display_error(result) -> None:
 
 
 def general_treatment(device, configs) -> None:
-    # for index, device in enumerate(devices):
-    # print(f"\nDevice {index+1} of {len(devices)}")
-    devices = device
-
     # 2a. Download CSV file
     results = download_csv_file(device)
-    # print(results)
 
     if results.get("error"):
         # There was an error trying to connect to the device
@@ -334,19 +329,19 @@ def general_treatment(device, configs) -> None:
     # 2c. Process data
     data = process_data(data)
 
-    # Execution of tasks in parallel
+    # Parallel task execution
     with concurrent.futures.ThreadPoolExecutor(max_workers=4) as executor:
         # 2d. Check remaining toner level
-        future1 = executor.submit(check_remaining_toner_level, data, configs, devices)
+        future1 = executor.submit(check_remaining_toner_level, data, configs, device)
 
         # 2e. Check remaining drum unit level
         future2 = executor.submit(
-            check_remaining_drum_unit_level, data, configs, devices
+            check_remaining_drum_unit_level, data, configs, device
         )
 
         # 2f. Check remaining life drum unit level
         future3 = executor.submit(
-            check_remaining_life_drum_unit_level, data, configs, devices
+            check_remaining_life_drum_unit_level, data, configs, device
         )
 
     # Get task results
@@ -372,9 +367,7 @@ def main():
     # 1. Execute some checks before starting
     some_prestart_checks(devices, configs)
 
-    # 2. Connection to each device
-    # general_treatment(devices, configs)
-
+    # 2. Parallel device connection
     with concurrent.futures.ThreadPoolExecutor(max_workers=4) as executor:
         futures = [
             executor.submit(general_treatment, device, configs) for device in devices

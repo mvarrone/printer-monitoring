@@ -57,4 +57,5 @@ def send_email(
         text = message.as_string()
         session.sendmail(sender_email, receiver_email, text)
 
-    print(f"Email sent. Reason: {reason}. Alert type: {alert_type}")
+    ip_address = data.get("IP Address")
+    print(f"({ip_address}) Email sent. Reason: {reason}. Alert type: {alert_type}")
