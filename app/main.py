@@ -310,15 +310,7 @@ def display_error(result):
     print("Reason to send an email is: ", result.get("reason_to_send_email"), "\n")
 
 
-def main():
-    # 0. Load data
-    devices = get_devices()
-    configs = get_configurations()
-
-    # 1. Execute some checks before starting
-    some_prestart_checks(devices, configs)
-
-    # 2. Each device
+def general_treatment(devices, configs):
     for index, device in enumerate(devices):
         print(f"\nDevice {index+1} of {len(devices)}")
 
@@ -366,6 +358,18 @@ def main():
 
         if result3.get("error"):
             display_error(result3)
+
+
+def main():
+    # 0. Load data
+    devices = get_devices()
+    configs = get_configurations()
+
+    # 1. Execute some checks before starting
+    some_prestart_checks(devices, configs)
+
+    # 2. Each device
+    general_treatment(devices, configs)
 
 
 if __name__ == "__main__":
