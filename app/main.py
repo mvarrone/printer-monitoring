@@ -26,12 +26,11 @@ def download_csv_file(device) -> dict:
         exc_args = str(e.args)
 
         print(f"Error trying to connect to {url}")
-        print(f"\nException type: {exc_type}")
-        print(f"\nException message: {exc_msg}")
-        print(f"\nException args: {exc_args}\n")
+        # print(f"\nException type: {exc_type}")
+        # print(f"\nException message: {exc_msg}")
+        # print(f"\nException args: {exc_args}\n")
 
         results = {"error": True, "ip_address": "", "csv_filename": ""}
-
         return results
 
     print(f"Connected to {url}\n")
@@ -101,8 +100,9 @@ def pre_send_email(body, reason, subject, current_value, configs, data, alert_ty
     return message
 
 
-def check_remaining_toner_level(data, configs, devices, index) -> dict:
-    printer_brand = devices[index].get("brand")
+def check_remaining_toner_level(data, configs, devices) -> dict:
+    # printer_brand = devices[index].get("brand")
+    printer_brand = devices.get("brand")
     ip_address = data.get("IP Address")
 
     features = configs.get("brands").get(printer_brand).get("features")
@@ -163,8 +163,9 @@ def check_remaining_toner_level(data, configs, devices, index) -> dict:
     return message
 
 
-def check_remaining_drum_unit_level(data, configs, devices, index) -> dict:
-    printer_brand = devices[index].get("brand")
+def check_remaining_drum_unit_level(data, configs, devices) -> dict:
+    # printer_brand = devices[index].get("brand")
+    printer_brand = devices.get("brand")
     ip_address = data.get("IP Address")
 
     features = configs.get("brands").get(printer_brand).get("features")
@@ -226,8 +227,9 @@ def check_remaining_drum_unit_level(data, configs, devices, index) -> dict:
     return message
 
 
-def check_remaining_life_drum_unit_level(data, configs, devices, index) -> dict:
-    printer_brand = devices[index].get("brand")
+def check_remaining_life_drum_unit_level(data, configs, devices) -> dict:
+    # printer_brand = devices[index].get("brand")
+    printer_brand = devices.get("brand")
     ip_address = data.get("IP Address")
 
     features = configs.get("brands").get(printer_brand).get("features")
@@ -304,60 +306,62 @@ def some_prestart_checks(devices, configs) -> None:
         sys.exit(1)
 
 
-def display_error(result):
+def display_error(result) -> None:
     print(result.get("error_title"))
     print("Error message: ", result.get("error_message"))
     print("Reason to send an email is: ", result.get("reason_to_send_email"), "\n")
 
 
-def general_treatment(devices, configs):
-    for index, device in enumerate(devices):
-        print(f"\nDevice {index+1} of {len(devices)}")
+def general_treatment(device, configs) -> None:
+    # for index, device in enumerate(devices):
+    # print(f"\nDevice {index+1} of {len(devices)}")
+    devices = device
 
-        # 2a. Download CSV file
-        results = download_csv_file(device)
+    # 2a. Download CSV file
+    results = download_csv_file(device)
+    # print(results)
 
-        if results.get("error"):
-            # There was an error trying to connect to the device
-            # So, script will skip this device and will try to connect to the next device in devices.json
-            continue
+    if results.get("error"):
+        # There was an error trying to connect to the device
+        # So, script will skip this device and will try to connect to the next device in devices.json
 
-        # 2b. Read CSV file
-        data = read_csv_file(results.get("ip_address"), results.get("csv_filename"))
+        # continue
+        return None
 
-        # 2c. Process data
-        data = process_data(data)
+    # 2b. Read CSV file
+    data = read_csv_file(results.get("ip_address"), results.get("csv_filename"))
 
-        # Execution of functions in parallel
-        with concurrent.futures.ThreadPoolExecutor() as executor:
-            # 2d. Check remaining toner level
-            future1 = executor.submit(
-                check_remaining_toner_level, data, configs, devices, index
-            )
+    # 2c. Process data
+    data = process_data(data)
 
-            # 2e. Check remaining drum unit level
-            future2 = executor.submit(
-                check_remaining_drum_unit_level, data, configs, devices, index
-            )
+    # Execution of tasks in parallel
+    with concurrent.futures.ThreadPoolExecutor(max_workers=4) as executor:
+        # 2d. Check remaining toner level
+        future1 = executor.submit(check_remaining_toner_level, data, configs, devices)
 
-            # 2f. Check remaining life drum unit level
-            future3 = executor.submit(
-                check_remaining_life_drum_unit_level, data, configs, devices, index
-            )
+        # 2e. Check remaining drum unit level
+        future2 = executor.submit(
+            check_remaining_drum_unit_level, data, configs, devices
+        )
 
-        # Get task results
-        result1 = future1.result()
-        result2 = future2.result()
-        result3 = future3.result()
+        # 2f. Check remaining life drum unit level
+        future3 = executor.submit(
+            check_remaining_life_drum_unit_level, data, configs, devices
+        )
 
-        if result1.get("error"):
-            display_error(result1)
+    # Get task results
+    result1 = future1.result()
+    result2 = future2.result()
+    result3 = future3.result()
 
-        if result2.get("error"):
-            display_error(result2)
+    if result1.get("error"):
+        display_error(result1)
 
-        if result3.get("error"):
-            display_error(result3)
+    if result2.get("error"):
+        display_error(result2)
+
+    if result3.get("error"):
+        display_error(result3)
 
 
 def main():
@@ -368,8 +372,17 @@ def main():
     # 1. Execute some checks before starting
     some_prestart_checks(devices, configs)
 
-    # 2. Each device
-    general_treatment(devices, configs)
+    # 2. Connection to each device
+    # general_treatment(devices, configs)
+
+    with concurrent.futures.ThreadPoolExecutor(max_workers=4) as executor:
+        futures = [
+            executor.submit(general_treatment, device, configs) for device in devices
+        ]
+
+    # for future in concurrent.futures.as_completed(futures):
+    #     result = future.result()
+    #     print(result)
 
 
 if __name__ == "__main__":
