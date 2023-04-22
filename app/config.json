@@ -3,7 +3,7 @@
         "sender": "mativarrone2@gmail.com",
         "receiver": "mativarrone2@gmail.com"
     },
-    "app_password": "fouphdkpajoyhnrk",
+    "app_password": "lcnsmzfmokpiaxcr",
     "smtp": {
         "host": "smtp.gmail.com",
         "port": 587
@@ -20,6 +20,16 @@
                     "THRESHOLD_ERROR_LOW_TONER_LEVEL": 0,
                     "THRESHOLD_CRITICAL_LOW_TONER_LEVEL": 10,
                     "THRESHOLD_WARNING_LOW_TONER_LEVEL": 50
+                },
+                "FEATURE_2": {
+                    "THRESHOLD_ERROR_LOW_DRUM_UNIT_LEVEL": 0,
+                    "THRESHOLD_CRITICAL_LOW_DRUM_UNIT_LEVEL": 10,
+                    "THRESHOLD_WARNING_LOW_DRUM_UNIT_LEVEL": 50
+                },
+                "FEATURE_3": {
+                    "THRESHOLD_ERROR_LOW_LIFE_DRUM_UNIT_LEVEL": 0,
+                    "THRESHOLD_CRITICAL_LOW_LIFE_DRUM_UNIT_LEVEL": 1500,
+                    "THRESHOLD_WARNING_LOW_LIFE_DRUM_UNIT_LEVEL": 7500
                 }
             }
         }

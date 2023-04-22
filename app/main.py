@@ -1,11 +1,10 @@
 import csv
 import math
 import sys
+import time
 
 import requests
 from utils import get_configurations, get_devices, send_email
-from datetime import datetime
-import time
 
 
 def download_csv_file(device) -> dict:
@@ -66,14 +65,14 @@ def process_data(data) -> dict:
 
     # data_json = json.dumps(data, indent=2, sort_keys=True)
     # print(data_json)
-
     return data
 
 
-def pre_send_email(
-    body, reason, subject, remaining_toner_level, configs, data, alert_type
-):
-    body += f"<br>Current toner value: {remaining_toner_level} %"
+def pre_send_email(body, reason, subject, current_value, configs, data, alert_type):
+    if "life drum unit level" in reason:
+        body += f"<br>Current value: {current_value}"
+    else:
+        body += f"<br>Current value: {current_value} %"
 
     sender_email = configs.get("email_addresses").get("sender")
     receiver_email = configs.get("email_addresses").get("receiver")
@@ -105,58 +104,57 @@ def check_remaining_toner_level(data, configs, devices, index) -> dict:
     printer_brand = devices[index].get("brand")
     ip_address = data.get("IP Address")
 
-    # FEATURE_1 = "% of Life Remaining(Toner)"
-    # THRESHOLD_ERROR_LOW_TONER_LEVEL = 0
-    # THRESHOLD_CRITICAL_LOW_TONER_LEVEL = 10
-    # THRESHOLD_WARNING_LOW_TONER_LEVEL = 50
-
     features = configs.get("brands").get(printer_brand).get("features")
     FEATURE_1 = features.get("FEATURE_1")
     remaining_toner_level = int(data.get(FEATURE_1))
 
-    thresholds = (
-        configs.get("brands").get(printer_brand).get("thresholds").get("FEATURE_1")
+    thresholds = configs.get("brands").get(printer_brand).get("thresholds")
+    thresholds_for_feature_1 = thresholds.get("FEATURE_1")
+    THRESHOLD_ERROR_LOW_TONER_LEVEL = thresholds_for_feature_1.get(
+        "THRESHOLD_ERROR_LOW_TONER_LEVEL"
     )
-    THRESHOLD_ERROR_LOW_TONER_LEVEL = thresholds.get("THRESHOLD_ERROR_LOW_TONER_LEVEL")
-    THRESHOLD_CRITICAL_LOW_TONER_LEVEL = thresholds.get(
+    THRESHOLD_CRITICAL_LOW_TONER_LEVEL = thresholds_for_feature_1.get(
         "THRESHOLD_CRITICAL_LOW_TONER_LEVEL"
     )
-    THRESHOLD_WARNING_LOW_TONER_LEVEL = thresholds.get(
+    THRESHOLD_WARNING_LOW_TONER_LEVEL = thresholds_for_feature_1.get(
         "THRESHOLD_WARNING_LOW_TONER_LEVEL"
     )
 
     if remaining_toner_level == THRESHOLD_ERROR_LOW_TONER_LEVEL:
-        body = f"Printer toner level is 0 %"
+        current_value = remaining_toner_level
+        body = "Printer toner level is empty"
         reason = "Empty toner level"
         alert_type = "ERROR"
         subject = f"({ip_address}) {alert_type}: {reason}"
 
         message = pre_send_email(
-            body, reason, subject, remaining_toner_level, configs, data, alert_type
+            body, reason, subject, current_value, configs, data, alert_type
         )
         return message
 
     if remaining_toner_level <= THRESHOLD_CRITICAL_LOW_TONER_LEVEL:
+        current_value = remaining_toner_level
         body = f"Printer with toner level minor than {THRESHOLD_CRITICAL_LOW_TONER_LEVEL} %"
         reason = "Very low toner level"
         alert_type = "CRITICAL"
         subject = f"({ip_address}) {alert_type}: {reason}"
 
         message = pre_send_email(
-            body, reason, subject, remaining_toner_level, configs, data, alert_type
+            body, reason, subject, current_value, configs, data, alert_type
         )
         return message
 
     if remaining_toner_level <= THRESHOLD_WARNING_LOW_TONER_LEVEL:
+        current_value = remaining_toner_level
         body = (
             f"Printer with toner level minor than {THRESHOLD_WARNING_LOW_TONER_LEVEL} %"
         )
-        reason = "Middle toner level"
+        reason = "About toner level"
         alert_type = "WARNING"
         subject = f"({ip_address}) {alert_type}: {reason}"
 
         message = pre_send_email(
-            body, reason, subject, remaining_toner_level, configs, data, alert_type
+            body, reason, subject, current_value, configs, data, alert_type
         )
         return message
 
@@ -164,80 +162,122 @@ def check_remaining_toner_level(data, configs, devices, index) -> dict:
     return message
 
 
-def check_remaining_drum_unit_level(data, configs) -> dict:
-    FEATURE_2 = "% of Life Remaining(Drum Unit)"
-    remaining_drum_unit_level = float(data.get(FEATURE_2))
+def check_remaining_drum_unit_level(data, configs, devices, index) -> dict:
+    printer_brand = devices[index].get("brand")
+    ip_address = data.get("IP Address")
 
+    features = configs.get("brands").get(printer_brand).get("features")
+    FEATURE_2 = features.get("FEATURE_2")
+
+    remaining_drum_unit_level = float(data.get(FEATURE_2))
     remaining_drum_unit_level = math.trunc(remaining_drum_unit_level)
 
-    THRESHOLD_WARNING_LOW_DRUM_UNIT_LEVEL = 90
+    thresholds = configs.get("brands").get(printer_brand).get("thresholds")
+    thresholds_for_feature_2 = thresholds.get("FEATURE_2")
+    THRESHOLD_ERROR_LOW_DRUM_UNIT_LEVEL = thresholds_for_feature_2.get(
+        "THRESHOLD_ERROR_LOW_DRUM_UNIT_LEVEL"
+    )
+    THRESHOLD_CRITICAL_LOW_DRUM_UNIT_LEVEL = thresholds_for_feature_2.get(
+        "THRESHOLD_CRITICAL_LOW_DRUM_UNIT_LEVEL"
+    )
+    THRESHOLD_WARNING_LOW_DRUM_UNIT_LEVEL = thresholds_for_feature_2.get(
+        "THRESHOLD_WARNING_LOW_DRUM_UNIT_LEVEL"
+    )
+
+    if remaining_drum_unit_level == THRESHOLD_ERROR_LOW_DRUM_UNIT_LEVEL:
+        current_value = remaining_drum_unit_level
+        body = "Printer drum unit level is empty"
+        reason = "Empty drum unit level"
+        alert_type = "ERROR"
+        subject = f"({ip_address}) {alert_type}: {reason}"
+
+        message = pre_send_email(
+            body, reason, subject, current_value, configs, data, alert_type
+        )
+        return message
+
+    if remaining_drum_unit_level <= THRESHOLD_CRITICAL_LOW_DRUM_UNIT_LEVEL:
+        current_value = remaining_drum_unit_level
+        body = f"Printer with drum unit level minor than {THRESHOLD_CRITICAL_LOW_DRUM_UNIT_LEVEL} %"
+        reason = "Very low drum unit level"
+        alert_type = "CRITICAL"
+        subject = f"({ip_address}) {alert_type}: {reason}"
+
+        message = pre_send_email(
+            body, reason, subject, current_value, configs, data, alert_type
+        )
+        return message
+
     if remaining_drum_unit_level <= THRESHOLD_WARNING_LOW_DRUM_UNIT_LEVEL:
+        current_value = remaining_drum_unit_level
         body = f"Printer with drum unit level minor than {THRESHOLD_WARNING_LOW_DRUM_UNIT_LEVEL} %"
-        body += f"<br>Current drum unit value: {remaining_drum_unit_level} %"
-        reason = "Low drum unit level"
-        ip_address = data.get("IP Address")
-        sender_email = configs.get("email_addresses").get("sender")
-        receiver_email = configs.get("email_addresses").get("receiver")
-        subject = f"({ip_address}) WARNING: {reason}"
+        reason = "About drum unit level"
+        alert_type = "WARNING"
+        subject = f"({ip_address}) {alert_type}: {reason}"
 
-        try:
-            send_email(
-                sender_email=sender_email,
-                receiver_email=receiver_email,
-                subject=subject,
-                body=body,
-                data=data,
-                reason=reason,
-            )
-        except Exception as e:
-            message = {
-                "error": True,
-                "error_title": "Error trying to send an email",
-                "error_message": str(e),
-                "reason_to_send_email": reason,
-            }
-            return message
-
-        message = {"error": False}
+        message = pre_send_email(
+            body, reason, subject, current_value, configs, data, alert_type
+        )
         return message
 
     message = {"error": False}
     return message
 
 
-def check_remaining_life_drum_unit_level(data, configs) -> dict:
-    FEATURE_3 = "Remaining Life(Drum Unit)"
+def check_remaining_life_drum_unit_level(data, configs, devices, index) -> dict:
+    printer_brand = devices[index].get("brand")
+    ip_address = data.get("IP Address")
+
+    features = configs.get("brands").get(printer_brand).get("features")
+    FEATURE_3 = features.get("FEATURE_3")
     remaining_life_drum_unit_level = int(data.get(FEATURE_3))
 
-    THRESHOLD_WARNING_LOW_LIFE_DRUM_UNIT = 8000
-    if remaining_life_drum_unit_level <= THRESHOLD_WARNING_LOW_LIFE_DRUM_UNIT:
-        body = f"Printer with life drum unit value minor than {THRESHOLD_WARNING_LOW_LIFE_DRUM_UNIT}"
-        body += f"<br>Current life drum unit value: {remaining_life_drum_unit_level}"
-        reason = "Low life drum unit level"
-        ip_address = data.get("IP Address")
-        sender_email = configs.get("email_addresses").get("sender")
-        receiver_email = configs.get("email_addresses").get("receiver")
-        subject = f"({ip_address}) WARNING: {reason}"
+    thresholds = configs.get("brands").get(printer_brand).get("thresholds")
+    thresholds_for_feature_3 = thresholds.get("FEATURE_3")
+    THRESHOLD_ERROR_LOW_LIFE_DRUM_UNIT_LEVEL = thresholds_for_feature_3.get(
+        "THRESHOLD_ERROR_LOW_LIFE_DRUM_UNIT_LEVEL"
+    )
+    THRESHOLD_CRITICAL_LOW_LIFE_DRUM_UNIT_LEVEL = thresholds_for_feature_3.get(
+        "THRESHOLD_CRITICAL_LOW_LIFE_DRUM_UNIT_LEVEL"
+    )
+    THRESHOLD_WARNING_LOW_LIFE_DRUM_UNIT_LEVEL = thresholds_for_feature_3.get(
+        "THRESHOLD_WARNING_LOW_LIFE_DRUM_UNIT_LEVEL"
+    )
 
-        try:
-            send_email(
-                sender_email=sender_email,
-                receiver_email=receiver_email,
-                subject=subject,
-                body=body,
-                data=data,
-                reason=reason,
-            )
-        except Exception as e:
-            message = {
-                "error": True,
-                "error_title": "Error trying to send an email",
-                "error_message": str(e),
-                "reason_to_send_email": reason,
-            }
-            return message
+    if remaining_life_drum_unit_level == THRESHOLD_ERROR_LOW_LIFE_DRUM_UNIT_LEVEL:
+        current_value = remaining_life_drum_unit_level
+        body = "Printer life drum unit level is empty"
+        reason = "Empty life drum unit level"
+        alert_type = "ERROR"
+        subject = f"({ip_address}) {alert_type}: {reason}"
 
-        message = {"error": False}
+        message = pre_send_email(
+            body, reason, subject, current_value, configs, data, alert_type
+        )
+        return message
+
+    if remaining_life_drum_unit_level <= THRESHOLD_CRITICAL_LOW_LIFE_DRUM_UNIT_LEVEL:
+        current_value = remaining_life_drum_unit_level
+        body = f"Printer with life drum unit level minor than {THRESHOLD_CRITICAL_LOW_LIFE_DRUM_UNIT_LEVEL} %"
+        reason = "Very low life drum unit level"
+        alert_type = "CRITICAL"
+        subject = f"({ip_address}) {alert_type}: {reason}"
+
+        message = pre_send_email(
+            body, reason, subject, current_value, configs, data, alert_type
+        )
+        return message
+
+    if remaining_life_drum_unit_level <= THRESHOLD_WARNING_LOW_LIFE_DRUM_UNIT_LEVEL:
+        current_value = remaining_life_drum_unit_level
+        body = f"Printer with life drum unit level minor than {THRESHOLD_WARNING_LOW_LIFE_DRUM_UNIT_LEVEL} %"
+        reason = "About life drum unit level"
+        alert_type = "WARNING"
+        subject = f"({ip_address}) {alert_type}: {reason}"
+
+        message = pre_send_email(
+            body, reason, subject, current_value, configs, data, alert_type
+        )
         return message
 
     message = {"error": False}
@@ -265,11 +305,7 @@ def some_prestart_checks(devices, configs) -> None:
 def display_error(message):
     print(message.get("error_title"))
     print("Error message: ", message.get("error_message"))
-    print(
-        "Reason to send an email is: ",
-        message.get("reason_to_send_email"),
-        "\n",
-    )
+    print("Reason to send an email is: ", message.get("reason_to_send_email"), "\n")
 
 
 def main():
@@ -303,15 +339,15 @@ def main():
         if message.get("error"):
             display_error(message)
 
-        # # 2e. Check remaining drum unit level
-        # message = check_remaining_drum_unit_level(data, configs)
-        # if message.get("error"):
-        #     display_error(message)
+        # 2e. Check remaining drum unit level
+        message = check_remaining_drum_unit_level(data, configs, devices, index)
+        if message.get("error"):
+            display_error(message)
 
-        # # 2f. Check remaining life drum unit level
-        # message = check_remaining_life_drum_unit_level(data, configs)
-        # if message.get("error"):
-        #     display_error(message)
+        # 2f. Check remaining life drum unit level
+        message = check_remaining_life_drum_unit_level(data, configs, devices, index)
+        if message.get("error"):
+            display_error(message)
 
 
 if __name__ == "__main__":
