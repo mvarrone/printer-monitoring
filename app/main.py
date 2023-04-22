@@ -172,6 +172,7 @@ def check_remaining_drum_unit_level(data, configs, devices, index) -> dict:
 
     remaining_drum_unit_level = float(data.get(FEATURE_2))
     remaining_drum_unit_level = math.trunc(remaining_drum_unit_level)
+    remaining_drum_unit_level = 38
 
     thresholds = configs.get("brands").get(printer_brand).get("thresholds")
     thresholds_for_feature_2 = thresholds.get("FEATURE_2")
@@ -259,7 +260,7 @@ def check_remaining_life_drum_unit_level(data, configs, devices, index) -> dict:
 
     if remaining_life_drum_unit_level <= THRESHOLD_CRITICAL_LOW_LIFE_DRUM_UNIT_LEVEL:
         current_value = remaining_life_drum_unit_level
-        body = f"Printer with life drum unit level minor than {THRESHOLD_CRITICAL_LOW_LIFE_DRUM_UNIT_LEVEL} %"
+        body = f"Printer with life drum unit level minor than {THRESHOLD_CRITICAL_LOW_LIFE_DRUM_UNIT_LEVEL}"
         reason = "Very low life drum unit level"
         alert_type = "CRITICAL"
         subject = f"({ip_address}) {alert_type}: {reason}"
@@ -271,7 +272,7 @@ def check_remaining_life_drum_unit_level(data, configs, devices, index) -> dict:
 
     if remaining_life_drum_unit_level <= THRESHOLD_WARNING_LOW_LIFE_DRUM_UNIT_LEVEL:
         current_value = remaining_life_drum_unit_level
-        body = f"Printer with life drum unit level minor than {THRESHOLD_WARNING_LOW_LIFE_DRUM_UNIT_LEVEL} %"
+        body = f"Printer with life drum unit level minor than {THRESHOLD_WARNING_LOW_LIFE_DRUM_UNIT_LEVEL}"
         reason = "About life drum unit level"
         alert_type = "WARNING"
         subject = f"({ip_address}) {alert_type}: {reason}"
@@ -303,10 +304,10 @@ def some_prestart_checks(devices, configs) -> None:
         sys.exit(1)
 
 
-def display_error(message):
-    print(message.get("error_title"))
-    print("Error message: ", message.get("error_message"))
-    print("Reason to send an email is: ", message.get("reason_to_send_email"), "\n")
+def display_error(result):
+    print(result.get("error_title"))
+    print("Error message: ", result.get("error_message"))
+    print("Reason to send an email is: ", result.get("reason_to_send_email"), "\n")
 
 
 def main():
@@ -335,20 +336,36 @@ def main():
         # 2c. Process data
         data = process_data(data)
 
-        # 2d. Check remaining toner level
-        message = check_remaining_toner_level(data, configs, devices, index)
-        if message.get("error"):
-            display_error(message)
+        # Execution of functions in parallel
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            # 2d. Check remaining toner level
+            future1 = executor.submit(
+                check_remaining_toner_level, data, configs, devices, index
+            )
 
-        # 2e. Check remaining drum unit level
-        message = check_remaining_drum_unit_level(data, configs, devices, index)
-        if message.get("error"):
-            display_error(message)
+            # 2e. Check remaining drum unit level
+            future2 = executor.submit(
+                check_remaining_drum_unit_level, data, configs, devices, index
+            )
 
-        # 2f. Check remaining life drum unit level
-        message = check_remaining_life_drum_unit_level(data, configs, devices, index)
-        if message.get("error"):
-            display_error(message)
+            # 2f. Check remaining life drum unit level
+            future3 = executor.submit(
+                check_remaining_life_drum_unit_level, data, configs, devices, index
+            )
+
+        # Get task results
+        result1 = future1.result()
+        result2 = future2.result()
+        result3 = future3.result()
+
+        if result1.get("error"):
+            display_error(result1)
+
+        if result2.get("error"):
+            display_error(result2)
+
+        if result3.get("error"):
+            display_error(result3)
 
 
 if __name__ == "__main__":
