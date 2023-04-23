@@ -373,9 +373,9 @@ def main():
             executor.submit(general_treatment, device, configs) for device in devices
         ]
 
-    # for future in concurrent.futures.as_completed(futures):
-    #     result = future.result()
-    #     print(result)
+    for future in concurrent.futures.as_completed(futures):
+        result = future.result()
+        print(result)
 
 
 if __name__ == "__main__":
