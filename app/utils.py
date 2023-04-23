@@ -19,7 +19,7 @@ def get_configurations() -> dict:
 
 
 def send_email(
-    sender_email, receiver_email, subject, body, data, reason, alert_type
+    sender_email, receiver_email, subject, body, data, reason, alert_type, devices
 ) -> None:
     config_data = get_configurations()
 
@@ -57,5 +57,7 @@ def send_email(
         text = message.as_string()
         session.sendmail(sender_email, receiver_email, text)
 
-    ip_address = data.get("IP Address")
-    print(f"({ip_address}) Email sent. Reason: {reason}. Alert type: {alert_type}")
+    device_ip_address = devices.get("ip_address")
+    print(
+        f"({device_ip_address}) Email sent. Reason: {reason}. Alert type: {alert_type}"
+    )

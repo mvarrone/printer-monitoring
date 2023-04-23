@@ -17,9 +17,12 @@ def download_csv_file(device) -> dict:
 
     url = f"{protocol}://{ip_address}:{port}{path}{csv_filename}"
 
+    connect_timeout = 2  # seconds
+    read_timeout = 2  # seconds
+
     try:
         print(f"Connecting to {url}...")
-        response = requests.get(url)
+        response = requests.get(url, timeout=(connect_timeout, read_timeout))
     except Exception as e:
         exc_type = type(e).__name__
         exc_msg = str(e)
@@ -68,7 +71,9 @@ def process_data(data) -> dict:
     return data
 
 
-def pre_send_email(body, reason, subject, current_value, configs, data, alert_type):
+def pre_send_email(
+    body, reason, subject, current_value, configs, data, alert_type, devices
+):
     if "life drum unit level" in reason:
         body += f"<br>Current value: {current_value}"
     else:
@@ -86,6 +91,7 @@ def pre_send_email(body, reason, subject, current_value, configs, data, alert_ty
             data=data,
             reason=reason,
             alert_type=alert_type,
+            devices=devices,
         )
     except Exception as e:
         message = {
@@ -129,7 +135,7 @@ def check_remaining_toner_level(data, configs, devices) -> dict:
         subject = f"({ip_address}) {alert_type}: {reason}"
 
         message = pre_send_email(
-            body, reason, subject, current_value, configs, data, alert_type
+            body, reason, subject, current_value, configs, data, alert_type, devices
         )
         return message
 
@@ -141,7 +147,7 @@ def check_remaining_toner_level(data, configs, devices) -> dict:
         subject = f"({ip_address}) {alert_type}: {reason}"
 
         message = pre_send_email(
-            body, reason, subject, current_value, configs, data, alert_type
+            body, reason, subject, current_value, configs, data, alert_type, devices
         )
         return message
 
@@ -155,7 +161,7 @@ def check_remaining_toner_level(data, configs, devices) -> dict:
         subject = f"({ip_address}) {alert_type}: {reason}"
 
         message = pre_send_email(
-            body, reason, subject, current_value, configs, data, alert_type
+            body, reason, subject, current_value, configs, data, alert_type, devices
         )
         return message
 
@@ -195,7 +201,7 @@ def check_remaining_drum_unit_level(data, configs, devices) -> dict:
         subject = f"({ip_address}) {alert_type}: {reason}"
 
         message = pre_send_email(
-            body, reason, subject, current_value, configs, data, alert_type
+            body, reason, subject, current_value, configs, data, alert_type, devices
         )
         return message
 
@@ -207,7 +213,7 @@ def check_remaining_drum_unit_level(data, configs, devices) -> dict:
         subject = f"({ip_address}) {alert_type}: {reason}"
 
         message = pre_send_email(
-            body, reason, subject, current_value, configs, data, alert_type
+            body, reason, subject, current_value, configs, data, alert_type, devices
         )
         return message
 
@@ -219,7 +225,7 @@ def check_remaining_drum_unit_level(data, configs, devices) -> dict:
         subject = f"({ip_address}) {alert_type}: {reason}"
 
         message = pre_send_email(
-            body, reason, subject, current_value, configs, data, alert_type
+            body, reason, subject, current_value, configs, data, alert_type, devices
         )
         return message
 
@@ -256,7 +262,7 @@ def check_remaining_life_drum_unit_level(data, configs, devices) -> dict:
         subject = f"({ip_address}) {alert_type}: {reason}"
 
         message = pre_send_email(
-            body, reason, subject, current_value, configs, data, alert_type
+            body, reason, subject, current_value, configs, data, alert_type, devices
         )
         return message
 
@@ -268,7 +274,7 @@ def check_remaining_life_drum_unit_level(data, configs, devices) -> dict:
         subject = f"({ip_address}) {alert_type}: {reason}"
 
         message = pre_send_email(
-            body, reason, subject, current_value, configs, data, alert_type
+            body, reason, subject, current_value, configs, data, alert_type, devices
         )
         return message
 
@@ -280,7 +286,7 @@ def check_remaining_life_drum_unit_level(data, configs, devices) -> dict:
         subject = f"({ip_address}) {alert_type}: {reason}"
 
         message = pre_send_email(
-            body, reason, subject, current_value, configs, data, alert_type
+            body, reason, subject, current_value, configs, data, alert_type, devices
         )
         return message
 
@@ -312,7 +318,7 @@ def display_error(result) -> None:
     print("Reason to send an email is: ", result.get("reason_to_send_email"), "\n")
 
 
-def general_treatment(device, configs) -> None:
+def general_treatment(device, configs) -> bool:
     # 2a. Download CSV file
     results = download_csv_file(device)
 
@@ -321,7 +327,7 @@ def general_treatment(device, configs) -> None:
         # So, script will skip this device and will try to connect to the next device in devices.json
 
         # continue
-        return None
+        return False  # if connection was not OK
 
     # 2b. Read CSV file
     data = read_csv_file(results.get("ip_address"), results.get("csv_filename"))
@@ -358,6 +364,26 @@ def general_treatment(device, configs) -> None:
     if result3.get("error"):
         display_error(result3)
 
+    return True  # if connection was OK
+
+
+def count_results(results):
+    successes = 0
+    failures = 0
+    for result in results:
+        if result:
+            successes += 1
+        else:
+            failures += 1
+
+    total_devices = successes + failures
+    percentage_OK = 100 * (round(successes / total_devices, 2))
+    percentage_NOK = 100 * (round(failures / total_devices, 2))
+
+    print("\nStatistics")
+    print(f"Successful connections: {successes}/{total_devices} ({percentage_OK} %)")
+    print(f"Failed connections:     {failures}/{total_devices} ({percentage_NOK} %)")
+
 
 def main():
     # 0. Load data
@@ -373,9 +399,17 @@ def main():
             executor.submit(general_treatment, device, configs) for device in devices
         ]
 
+    successes = 0
+    failures = 0
     for future in concurrent.futures.as_completed(futures):
         result = future.result()
-        print(result)
+        if result:
+            successes += 1
+        else:
+            failures += 1
+
+    # Print results on connections
+    count_results([True] * successes + [False] * failures)
 
 
 if __name__ == "__main__":
