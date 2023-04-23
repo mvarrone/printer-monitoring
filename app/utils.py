@@ -7,15 +7,26 @@ from email.mime.text import MIMEText
 def get_devices() -> list:
     with open("devices.json", "r") as file:
         devices = json.load(file)
-
     return devices
 
 
 def get_configurations() -> dict:
     with open("config.json", "r") as file:
         configs = json.load(file)
-
     return configs
+
+
+def get_supported_brands(filepath) -> dict:
+    try:
+        with open(filepath, "r") as file:
+            brand_data = json.load(file)
+    except FileNotFoundError as e:
+        exc_msg = str(e)
+        exc_type = type(e).__name__
+
+        message = {"error": True, "error_message": exc_msg, "error_type": exc_type}
+        return message
+    return brand_data
 
 
 def send_email(

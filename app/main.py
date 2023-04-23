@@ -5,7 +5,7 @@ import sys
 import time
 
 import requests
-from utils import get_configurations, get_devices, send_email
+from utils import get_configurations, get_devices, send_email, get_supported_brands
 
 
 def download_csv_file(device) -> dict:
@@ -109,13 +109,22 @@ def pre_send_email(
 def check_remaining_toner_level(data, configs, devices) -> dict:
     # printer_brand = devices[index].get("brand")
     printer_brand = devices.get("brand")
+    printer_ip_address = devices.get("ip_address")
+
     ip_address = data.get("IP Address")
 
-    features = configs.get("brands").get(printer_brand).get("features")
+    # features = configs.get("brands").get(printer_brand).get("features")
+    brand_data = get_supported_brands(f"supported_brands/{printer_brand}.json")
+    if brand_data.get("error"):
+        brand_data["ip_address"] = printer_ip_address
+        return brand_data
+
+    features = brand_data.get("features")
     FEATURE_1 = features.get("FEATURE_1")
     remaining_toner_level = int(data.get(FEATURE_1))
 
-    thresholds = configs.get("brands").get(printer_brand).get("thresholds")
+    # thresholds = configs.get("brands").get(printer_brand).get("thresholds")
+    thresholds = brand_data.get("thresholds")
     thresholds_for_feature_1 = thresholds.get("FEATURE_1")
     THRESHOLD_ERROR_LOW_TONER_LEVEL = thresholds_for_feature_1.get(
         "THRESHOLD_ERROR_LOW_TONER_LEVEL"
@@ -132,7 +141,7 @@ def check_remaining_toner_level(data, configs, devices) -> dict:
         body = "Printer toner level is empty"
         reason = "Empty toner level"
         alert_type = "ERROR"
-        subject = f"({ip_address}) {alert_type}: {reason}"
+        subject = f"({printer_ip_address}) {alert_type}: {reason}"
 
         message = pre_send_email(
             body, reason, subject, current_value, configs, data, alert_type, devices
@@ -144,7 +153,7 @@ def check_remaining_toner_level(data, configs, devices) -> dict:
         body = f"Printer with toner level minor than {THRESHOLD_CRITICAL_LOW_TONER_LEVEL} %"
         reason = "Very low toner level"
         alert_type = "CRITICAL"
-        subject = f"({ip_address}) {alert_type}: {reason}"
+        subject = f"({printer_ip_address}) {alert_type}: {reason}"
 
         message = pre_send_email(
             body, reason, subject, current_value, configs, data, alert_type, devices
@@ -158,7 +167,7 @@ def check_remaining_toner_level(data, configs, devices) -> dict:
         )
         reason = "About toner level"
         alert_type = "WARNING"
-        subject = f"({ip_address}) {alert_type}: {reason}"
+        subject = f"({printer_ip_address}) {alert_type}: {reason}"
 
         message = pre_send_email(
             body, reason, subject, current_value, configs, data, alert_type, devices
@@ -172,16 +181,26 @@ def check_remaining_toner_level(data, configs, devices) -> dict:
 def check_remaining_drum_unit_level(data, configs, devices) -> dict:
     # printer_brand = devices[index].get("brand")
     printer_brand = devices.get("brand")
+    printer_ip_address = devices.get("ip_address")
+
     ip_address = data.get("IP Address")
 
-    features = configs.get("brands").get(printer_brand).get("features")
+    # features = configs.get("brands").get(printer_brand).get("features")
+    brand_data = get_supported_brands(f"supported_brands/{printer_brand}.json")
+    if brand_data.get("error"):
+        brand_data["ip_address"] = printer_ip_address
+        return brand_data
+
+    features = brand_data.get("features")
     FEATURE_2 = features.get("FEATURE_2")
 
     remaining_drum_unit_level = float(data.get(FEATURE_2))
     remaining_drum_unit_level = math.trunc(remaining_drum_unit_level)
     remaining_drum_unit_level = 38
 
-    thresholds = configs.get("brands").get(printer_brand).get("thresholds")
+    # thresholds = configs.get("brands").get(printer_brand).get("thresholds")
+
+    thresholds = brand_data.get("thresholds")
     thresholds_for_feature_2 = thresholds.get("FEATURE_2")
     THRESHOLD_ERROR_LOW_DRUM_UNIT_LEVEL = thresholds_for_feature_2.get(
         "THRESHOLD_ERROR_LOW_DRUM_UNIT_LEVEL"
@@ -198,7 +217,7 @@ def check_remaining_drum_unit_level(data, configs, devices) -> dict:
         body = "Printer drum unit level is empty"
         reason = "Empty drum unit level"
         alert_type = "ERROR"
-        subject = f"({ip_address}) {alert_type}: {reason}"
+        subject = f"({printer_ip_address}) {alert_type}: {reason}"
 
         message = pre_send_email(
             body, reason, subject, current_value, configs, data, alert_type, devices
@@ -210,7 +229,7 @@ def check_remaining_drum_unit_level(data, configs, devices) -> dict:
         body = f"Printer with drum unit level minor than {THRESHOLD_CRITICAL_LOW_DRUM_UNIT_LEVEL} %"
         reason = "Very low drum unit level"
         alert_type = "CRITICAL"
-        subject = f"({ip_address}) {alert_type}: {reason}"
+        subject = f"({printer_ip_address}) {alert_type}: {reason}"
 
         message = pre_send_email(
             body, reason, subject, current_value, configs, data, alert_type, devices
@@ -222,7 +241,7 @@ def check_remaining_drum_unit_level(data, configs, devices) -> dict:
         body = f"Printer with drum unit level minor than {THRESHOLD_WARNING_LOW_DRUM_UNIT_LEVEL} %"
         reason = "About drum unit level"
         alert_type = "WARNING"
-        subject = f"({ip_address}) {alert_type}: {reason}"
+        subject = f"({printer_ip_address}) {alert_type}: {reason}"
 
         message = pre_send_email(
             body, reason, subject, current_value, configs, data, alert_type, devices
@@ -236,13 +255,22 @@ def check_remaining_drum_unit_level(data, configs, devices) -> dict:
 def check_remaining_life_drum_unit_level(data, configs, devices) -> dict:
     # printer_brand = devices[index].get("brand")
     printer_brand = devices.get("brand")
+    printer_ip_address = devices.get("ip_address")
+
     ip_address = data.get("IP Address")
 
-    features = configs.get("brands").get(printer_brand).get("features")
+    # features = configs.get("brands").get(printer_brand).get("features")
+    brand_data = get_supported_brands(f"supported_brands/{printer_brand}.json")
+    if brand_data.get("error"):
+        brand_data["ip_address"] = printer_ip_address
+        return brand_data
+
+    features = brand_data.get("features")
     FEATURE_3 = features.get("FEATURE_3")
     remaining_life_drum_unit_level = int(data.get(FEATURE_3))
 
-    thresholds = configs.get("brands").get(printer_brand).get("thresholds")
+    # thresholds = configs.get("brands").get(printer_brand).get("thresholds")
+    thresholds = brand_data.get("thresholds")
     thresholds_for_feature_3 = thresholds.get("FEATURE_3")
     THRESHOLD_ERROR_LOW_LIFE_DRUM_UNIT_LEVEL = thresholds_for_feature_3.get(
         "THRESHOLD_ERROR_LOW_LIFE_DRUM_UNIT_LEVEL"
@@ -259,7 +287,7 @@ def check_remaining_life_drum_unit_level(data, configs, devices) -> dict:
         body = "Printer life drum unit level is empty"
         reason = "Empty life drum unit level"
         alert_type = "ERROR"
-        subject = f"({ip_address}) {alert_type}: {reason}"
+        subject = f"({printer_ip_address}) {alert_type}: {reason}"
 
         message = pre_send_email(
             body, reason, subject, current_value, configs, data, alert_type, devices
@@ -271,7 +299,7 @@ def check_remaining_life_drum_unit_level(data, configs, devices) -> dict:
         body = f"Printer with life drum unit level minor than {THRESHOLD_CRITICAL_LOW_LIFE_DRUM_UNIT_LEVEL}"
         reason = "Very low life drum unit level"
         alert_type = "CRITICAL"
-        subject = f"({ip_address}) {alert_type}: {reason}"
+        subject = f"({printer_ip_address}) {alert_type}: {reason}"
 
         message = pre_send_email(
             body, reason, subject, current_value, configs, data, alert_type, devices
@@ -283,7 +311,7 @@ def check_remaining_life_drum_unit_level(data, configs, devices) -> dict:
         body = f"Printer with life drum unit level minor than {THRESHOLD_WARNING_LOW_LIFE_DRUM_UNIT_LEVEL}"
         reason = "About life drum unit level"
         alert_type = "WARNING"
-        subject = f"({ip_address}) {alert_type}: {reason}"
+        subject = f"({printer_ip_address}) {alert_type}: {reason}"
 
         message = pre_send_email(
             body, reason, subject, current_value, configs, data, alert_type, devices
@@ -313,9 +341,14 @@ def some_prestart_checks(devices, configs) -> None:
 
 
 def display_error(result) -> None:
-    print(result.get("error_title"))
-    print("Error message: ", result.get("error_message"))
-    print("Reason to send an email is: ", result.get("reason_to_send_email"), "\n")
+    if result.get("error_type") == "FileNotFoundError":
+        ip_address = result.get("ip_address")
+        error_message = result.get("error_message")
+        print(f"({ip_address}) Error message: {error_message}")
+    else:
+        print(result.get("error_title"))
+        print("Error message: ", result.get("error_message"))
+        print("Reason to send an email is: ", result.get("reason_to_send_email"), "\n")
 
 
 def general_treatment(device, configs) -> bool:
@@ -326,8 +359,11 @@ def general_treatment(device, configs) -> bool:
         # There was an error trying to connect to the device
         # So, script will skip this device and will try to connect to the next device in devices.json
 
-        # continue
-        return False  # if connection was not OK
+        return {
+            "status": False,
+            "device_IP": device.get("ip_address"),
+        }  # if connection was not OK
+        # return False, device.get("ip_address")  # if connection was not OK
 
     # 2b. Read CSV file
     data = read_csv_file(results.get("ip_address"), results.get("csv_filename"))
@@ -364,10 +400,14 @@ def general_treatment(device, configs) -> bool:
     if result3.get("error"):
         display_error(result3)
 
-    return True  # if connection was OK
+    return {
+        "status": True,
+        "device_IP": device.get("ip_address"),
+    }  # if connection was OK
+    # return True, device.get("ip_address")  # if connection was OK
 
 
-def count_results(results):
+def count_results(results, connection_ok_list, connection_nok_list):
     successes = 0
     failures = 0
     for result in results:
@@ -380,9 +420,13 @@ def count_results(results):
     percentage_OK = 100 * (round(successes / total_devices, 2))
     percentage_NOK = 100 * (round(failures / total_devices, 2))
 
-    print("\nStatistics")
+    print("\n--- Results on connections---")
     print(f"Successful connections: {successes}/{total_devices} ({percentage_OK} %)")
+    for device in connection_ok_list:
+        print(f"  - {device}")
     print(f"Failed connections:     {failures}/{total_devices} ({percentage_NOK} %)")
+    for device in connection_nok_list:
+        print(f"  - {device}")
 
 
 def main():
@@ -401,15 +445,21 @@ def main():
 
     successes = 0
     failures = 0
+    connection_ok_list = list()
+    connection_nok_list = list()
     for future in concurrent.futures.as_completed(futures):
         result = future.result()
-        if result:
+        if result.get("status"):
             successes += 1
+            connection_ok_list.append(result.get("device_IP"))
         else:
             failures += 1
+            connection_nok_list.append(result.get("device_IP"))
 
     # Print results on connections
-    count_results([True] * successes + [False] * failures)
+    count_results(
+        [True] * successes + [False] * failures, connection_ok_list, connection_nok_list
+    )
 
 
 if __name__ == "__main__":
