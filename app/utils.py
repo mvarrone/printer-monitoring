@@ -6,13 +6,13 @@ from typing import List, Dict, Union
 
 
 def get_devices() -> List[Dict[str, Union[str, int]]]:
-    with open("devices.json", "r") as file:
+    with open("app/devices.json", "r") as file:
         devices = json.load(file)
     return devices
 
 
 def get_configurations() -> Dict[str, Union[str, int]]:
-    with open("config.json", "r") as file:
+    with open("app/config.json", "r") as file:
         configs = json.load(file)
     return configs
 
@@ -39,7 +39,7 @@ def send_email(
     smtp_port = config_data.get("smtp").get("port")
     app_password = config_data.get("app_password")
 
-    with open("html/template.html", "r") as file:
+    with open("app/html/template.html", "r") as file:
         html = file.read()
 
     # Convert data to HTML table rows

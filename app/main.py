@@ -38,7 +38,7 @@ def download_csv_file(device) -> Dict[str, Union[bool, str]]:
         return results
 
     print(f"Connected to {url}")
-    with open("csv/" + ip_address + "-" + csv_filename, "wb") as f:
+    with open("app/csv/" + ip_address + "-" + csv_filename, "wb") as f:
         f.write(response.content)
 
     results = {"error": False, "ip_address": ip_address, "csv_filename": csv_filename}
@@ -47,7 +47,7 @@ def download_csv_file(device) -> Dict[str, Union[bool, str]]:
 
 
 def read_csv_file(ip_address, csv_filename) -> Dict[str, str]:
-    with open("csv/" + ip_address + "-" + csv_filename, newline="") as csvfile:
+    with open("app/csv/" + ip_address + "-" + csv_filename, newline="") as csvfile:
         reader = csv.reader(csvfile)
         key_list = list()
         value_list = list()
@@ -96,7 +96,7 @@ def pre_send_email(
     except Exception as e:
         message = {
             "error": True,
-            "error_title": "Error trying to send an email",
+            "error_title": f"({devices.get('ip_address')}) Error trying to send an email",
             "error_message": str(e),
             "reason_to_send_email": reason,
         }
@@ -110,7 +110,7 @@ def check_remaining_toner_level(data, configs, devices) -> Dict[str, Union[bool,
     printer_brand = devices.get("brand")
     printer_ip_address = devices.get("ip_address")
 
-    brand_data = get_supported_brands(f"supported_brands/{printer_brand}.json")
+    brand_data = get_supported_brands(f"app/supported_brands/{printer_brand}.json")
     if brand_data.get("error"):
         brand_data["ip_address"] = printer_ip_address
         return brand_data
@@ -179,7 +179,7 @@ def check_remaining_drum_unit_level(
     printer_brand = devices.get("brand")
     printer_ip_address = devices.get("ip_address")
 
-    brand_data = get_supported_brands(f"supported_brands/{printer_brand}.json")
+    brand_data = get_supported_brands(f"app/supported_brands/{printer_brand}.json")
     if brand_data.get("error"):
         brand_data["ip_address"] = printer_ip_address
         return brand_data
@@ -249,7 +249,7 @@ def check_remaining_life_drum_unit_level(
     printer_brand = devices.get("brand")
     printer_ip_address = devices.get("ip_address")
 
-    brand_data = get_supported_brands(f"supported_brands/{printer_brand}.json")
+    brand_data = get_supported_brands(f"app/supported_brands/{printer_brand}.json")
     if brand_data.get("error"):
         brand_data["ip_address"] = printer_ip_address
         return brand_data
@@ -334,7 +334,7 @@ def display_error(result) -> None:
         error_message = result.get("error_message")
         print(f"({ip_address}) Error message: {error_message}")
     else:
-        print(result.get("error_title"))
+        print("\n", result.get("error_title"))
         print("Error message: ", result.get("error_message"))
         print("Reason to send an email is: ", result.get("reason_to_send_email"), "\n")
 
