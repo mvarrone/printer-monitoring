@@ -2,21 +2,22 @@ import json
 import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+from typing import List, Dict, Union
 
 
-def get_devices() -> list:
+def get_devices() -> List[Dict[str, Union[str, int]]]:
     with open("devices.json", "r") as file:
         devices = json.load(file)
     return devices
 
 
-def get_configurations() -> dict:
+def get_configurations() -> Dict[str, Union[str, int]]:
     with open("config.json", "r") as file:
         configs = json.load(file)
     return configs
 
 
-def get_supported_brands(filepath) -> dict:
+def get_supported_brands(filepath) -> Dict[str, Union[str, int]]:
     try:
         with open(filepath, "r") as file:
             brand_data = json.load(file)

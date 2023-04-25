@@ -3,12 +3,13 @@ import csv
 import math
 import sys
 import time
+from typing import Dict, List, Tuple, Union
 
 import requests
-from utils import get_configurations, get_devices, send_email, get_supported_brands
+from utils import get_configurations, get_devices, get_supported_brands, send_email
 
 
-def download_csv_file(device) -> dict:
+def download_csv_file(device) -> Dict[str, Union[bool, str]]:
     protocol = device.get("protocol")
     ip_address = device.get("ip_address")
     port = device.get("port")
@@ -45,7 +46,7 @@ def download_csv_file(device) -> dict:
     return results
 
 
-def read_csv_file(ip_address, csv_filename) -> dict:
+def read_csv_file(ip_address, csv_filename) -> Dict[str, str]:
     with open("csv/" + ip_address + "-" + csv_filename, newline="") as csvfile:
         reader = csv.reader(csvfile)
         key_list = list()
@@ -61,19 +62,18 @@ def read_csv_file(ip_address, csv_filename) -> dict:
     return data
 
 
-def process_data(data) -> dict:
+def process_data(data) -> Dict[str, str]:
     # Clean data
     data = {key: value for key, value in data.items() if key != ""}
     # print(data)
 
-    # data_json = json.dumps(data, indent=2, sort_keys=True)
-    # print(data_json)
+    # print(json.dumps(data, indent=2, sort_keys=True))
     return data
 
 
 def pre_send_email(
     body, reason, subject, current_value, configs, data, alert_type, devices
-):
+) -> Dict[str, Union[bool, str]]:
     if "life drum unit level" in reason:
         body += f"<br>Current value: {current_value}"
     else:
@@ -106,14 +106,10 @@ def pre_send_email(
     return message
 
 
-def check_remaining_toner_level(data, configs, devices) -> dict:
-    # printer_brand = devices[index].get("brand")
+def check_remaining_toner_level(data, configs, devices) -> Dict[str, Union[bool, str]]:
     printer_brand = devices.get("brand")
     printer_ip_address = devices.get("ip_address")
 
-    ip_address = data.get("IP Address")
-
-    # features = configs.get("brands").get(printer_brand).get("features")
     brand_data = get_supported_brands(f"supported_brands/{printer_brand}.json")
     if brand_data.get("error"):
         brand_data["ip_address"] = printer_ip_address
@@ -123,7 +119,6 @@ def check_remaining_toner_level(data, configs, devices) -> dict:
     FEATURE_1 = features.get("FEATURE_1")
     remaining_toner_level = int(data.get(FEATURE_1))
 
-    # thresholds = configs.get("brands").get(printer_brand).get("thresholds")
     thresholds = brand_data.get("thresholds")
     thresholds_for_feature_1 = thresholds.get("FEATURE_1")
     THRESHOLD_ERROR_LOW_TONER_LEVEL = thresholds_for_feature_1.get(
@@ -178,14 +173,12 @@ def check_remaining_toner_level(data, configs, devices) -> dict:
     return message
 
 
-def check_remaining_drum_unit_level(data, configs, devices) -> dict:
-    # printer_brand = devices[index].get("brand")
+def check_remaining_drum_unit_level(
+    data, configs, devices
+) -> Dict[str, Union[bool, str]]:
     printer_brand = devices.get("brand")
     printer_ip_address = devices.get("ip_address")
 
-    ip_address = data.get("IP Address")
-
-    # features = configs.get("brands").get(printer_brand).get("features")
     brand_data = get_supported_brands(f"supported_brands/{printer_brand}.json")
     if brand_data.get("error"):
         brand_data["ip_address"] = printer_ip_address
@@ -197,8 +190,6 @@ def check_remaining_drum_unit_level(data, configs, devices) -> dict:
     remaining_drum_unit_level = float(data.get(FEATURE_2))
     remaining_drum_unit_level = math.trunc(remaining_drum_unit_level)
     remaining_drum_unit_level = 38
-
-    # thresholds = configs.get("brands").get(printer_brand).get("thresholds")
 
     thresholds = brand_data.get("thresholds")
     thresholds_for_feature_2 = thresholds.get("FEATURE_2")
@@ -252,14 +243,12 @@ def check_remaining_drum_unit_level(data, configs, devices) -> dict:
     return message
 
 
-def check_remaining_life_drum_unit_level(data, configs, devices) -> dict:
-    # printer_brand = devices[index].get("brand")
+def check_remaining_life_drum_unit_level(
+    data, configs, devices
+) -> Dict[str, Union[bool, str]]:
     printer_brand = devices.get("brand")
     printer_ip_address = devices.get("ip_address")
 
-    ip_address = data.get("IP Address")
-
-    # features = configs.get("brands").get(printer_brand).get("features")
     brand_data = get_supported_brands(f"supported_brands/{printer_brand}.json")
     if brand_data.get("error"):
         brand_data["ip_address"] = printer_ip_address
@@ -269,7 +258,6 @@ def check_remaining_life_drum_unit_level(data, configs, devices) -> dict:
     FEATURE_3 = features.get("FEATURE_3")
     remaining_life_drum_unit_level = int(data.get(FEATURE_3))
 
-    # thresholds = configs.get("brands").get(printer_brand).get("thresholds")
     thresholds = brand_data.get("thresholds")
     thresholds_for_feature_3 = thresholds.get("FEATURE_3")
     THRESHOLD_ERROR_LOW_LIFE_DRUM_UNIT_LEVEL = thresholds_for_feature_3.get(
@@ -351,42 +339,40 @@ def display_error(result) -> None:
         print("Reason to send an email is: ", result.get("reason_to_send_email"), "\n")
 
 
-def general_treatment(device, configs) -> bool:
+def general_treatment(device, configs) -> Dict[str, Union[bool, str]]:
     # 2a. Download CSV file
     results = download_csv_file(device)
 
     if results.get("error"):
-        # There was an error trying to connect to the device
-        # So, script will skip this device and will try to connect to the next device in devices.json
-
         return {
             "status": False,
             "device_IP": device.get("ip_address"),
         }  # if connection was not OK
-        # return False, device.get("ip_address")  # if connection was not OK
 
     # 2b. Read CSV file
-    data = read_csv_file(results.get("ip_address"), results.get("csv_filename"))
+    raw_data = read_csv_file(results.get("ip_address"), results.get("csv_filename"))
 
     # 2c. Process data
-    data = process_data(data)
+    clean_data = process_data(raw_data)
 
-    # Parallel task execution
+    # 2d. Parallel task execution
     with concurrent.futures.ThreadPoolExecutor(max_workers=4) as executor:
-        # 2d. Check remaining toner level
-        future1 = executor.submit(check_remaining_toner_level, data, configs, device)
+        # 2d.1. Check remaining toner level
+        future1 = executor.submit(
+            check_remaining_toner_level, clean_data, configs, device
+        )
 
-        # 2e. Check remaining drum unit level
+        # 2d.2. Check remaining drum unit level
         future2 = executor.submit(
-            check_remaining_drum_unit_level, data, configs, device
+            check_remaining_drum_unit_level, clean_data, configs, device
         )
 
-        # 2f. Check remaining life drum unit level
+        # 2d.3. Check remaining life drum unit level
         future3 = executor.submit(
-            check_remaining_life_drum_unit_level, data, configs, device
+            check_remaining_life_drum_unit_level, clean_data, configs, device
         )
 
-    # Get task results
+    # 2e. Get task results
     result1 = future1.result()
     result2 = future2.result()
     result3 = future3.result()
@@ -404,32 +390,56 @@ def general_treatment(device, configs) -> bool:
         "status": True,
         "device_IP": device.get("ip_address"),
     }  # if connection was OK
-    # return True, device.get("ip_address")  # if connection was OK
 
 
-def count_results(results, connection_ok_list, connection_nok_list):
-    successes = 0
+def gather_connection_data(futures) -> Dict[str, Union[int, List[str]]]:
+    results = {"successes": 0, "failures": 0, "conn_ok": [], "conn_nok": []}
+
+    for future in concurrent.futures.as_completed(futures):
+        result = future.result()
+        device_ip = result.get("device_IP")
+
+        if result.get("status"):
+            results["successes"] += 1
+            results["conn_ok"].append(device_ip)
+
+        else:
+            results["failures"] += 1
+            results["conn_nok"].append(device_ip)
+
+    return results
+
+
+def process_connection_data(info) -> Tuple[int, int]:
     failures = 0
-    for result in results:
+    successes = 0
+
+    for result in info:
         if result:
             successes += 1
         else:
             failures += 1
 
+    return (successes, failures)
+
+
+def display_connection_data(successes, failures, conn_ok_list, conn_nok_list) -> None:
     total_devices = successes + failures
     percentage_OK = 100 * (round(successes / total_devices, 2))
     percentage_NOK = 100 * (round(failures / total_devices, 2))
 
     print("\n--- Results on connections---")
+
     print(f"Successful connections: {successes}/{total_devices} ({percentage_OK} %)")
-    for device in connection_ok_list:
+    for device in conn_ok_list:
         print(f"  - {device}")
+
     print(f"Failed connections:     {failures}/{total_devices} ({percentage_NOK} %)")
-    for device in connection_nok_list:
+    for device in conn_nok_list:
         print(f"  - {device}")
 
 
-def main():
+def main() -> None:
     # 0. Load data
     devices = get_devices()
     configs = get_configurations()
@@ -443,22 +453,18 @@ def main():
             executor.submit(general_treatment, device, configs) for device in devices
         ]
 
-    successes = 0
-    failures = 0
-    connection_ok_list = list()
-    connection_nok_list = list()
-    for future in concurrent.futures.as_completed(futures):
-        result = future.result()
-        if result.get("status"):
-            successes += 1
-            connection_ok_list.append(result.get("device_IP"))
-        else:
-            failures += 1
-            connection_nok_list.append(result.get("device_IP"))
+    # 3. Data about connections
+    # 3a. Gather data
+    results = gather_connection_data(futures)
 
-    # Print results on connections
-    count_results(
-        [True] * successes + [False] * failures, connection_ok_list, connection_nok_list
+    # 3b. Process data
+    successes, failures = process_connection_data(
+        [True] * results.get("successes") + [False] * results.get("failures")
+    )
+
+    # 3c. Print data results
+    display_connection_data(
+        successes, failures, results.get("conn_ok"), results.get("conn_nok")
     )
 
 

@@ -1,9 +1,10 @@
-Problem 1:
+Problem:
 
 -- Error trying to send email: -- (534, b'5.7.9 Application-specific password required. Learn more at\n5.7.9  https://support.google.com/mail/?p=InvalidSecondFactor i185-20020aca3bc2000000b003848dbe505fsm994092oia.57 - gsmtp')
 
 Solution:
 
 Link: https://support.google.com/mail/?p=InvalidSecondFactor
+
 a) Create an app password inside Google Account settings
 b) Paste this generated password (16 characters in length) into the value of the "app_password" key in the config.json file 
