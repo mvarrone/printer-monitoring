@@ -402,7 +402,6 @@ def gather_connection_data(futures) -> Dict[str, Union[int, List[str]]]:
         if result.get("status"):
             results["successes"] += 1
             results["conn_ok"].append(device_ip)
-
         else:
             results["failures"] += 1
             results["conn_nok"].append(device_ip)
@@ -410,32 +409,24 @@ def gather_connection_data(futures) -> Dict[str, Union[int, List[str]]]:
     return results
 
 
-def process_connection_data(info) -> Tuple[int, int]:
-    failures = 0
-    successes = 0
+def display_connection_data(results) -> None:
+    successes = results.get("successes")
+    failures = results.get("failures")
+    conn_ok = results.get("conn_ok")
+    conn_nok = results.get("conn_nok")
 
-    for result in info:
-        if result:
-            successes += 1
-        else:
-            failures += 1
-
-    return (successes, failures)
-
-
-def display_connection_data(successes, failures, conn_ok_list, conn_nok_list) -> None:
     total_devices = successes + failures
-    percentage_OK = 100 * (round(successes / total_devices, 2))
-    percentage_NOK = 100 * (round(failures / total_devices, 2))
+    percentage_OK = 100 * round(successes / total_devices, 2)
+    percentage_NOK = 100 * round(failures / total_devices, 2)
 
     print("\n--- Results on connections---")
 
     print(f"Successful connections: {successes}/{total_devices} ({percentage_OK} %)")
-    for device in conn_ok_list:
+    for device in conn_ok:
         print(f"  - {device}")
 
     print(f"Failed connections:     {failures}/{total_devices} ({percentage_NOK} %)")
-    for device in conn_nok_list:
+    for device in conn_nok:
         print(f"  - {device}")
 
 
@@ -457,15 +448,8 @@ def main() -> None:
     # 3a. Gather data
     results = gather_connection_data(futures)
 
-    # 3b. Process data
-    successes, failures = process_connection_data(
-        [True] * results.get("successes") + [False] * results.get("failures")
-    )
-
-    # 3c. Print data results
-    display_connection_data(
-        successes, failures, results.get("conn_ok"), results.get("conn_nok")
-    )
+    # 3b. Print data results
+    display_connection_data(results)
 
 
 if __name__ == "__main__":
