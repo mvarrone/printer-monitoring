@@ -1,9 +1,19 @@
 {
     "email_addresses": {
-        "sender": "to_be_completed@gmail.com",
-        "receiver": "to_be_completed@gmail.com"
+        "senders": {
+            "main": {
+                "address": "to_be_completed@gmail.com",
+                "app_password": "to_be_completed"
+            },
+            "first_backup": {
+                "address": "to_be_completed@gmail.com",
+                "app_password": "to_be_completed"
+            }
+        },
+        "receiver": {
+            "address": "to_be_completed@gmail.com"
+        }
     },
-    "app_password": "to_be_completed",
     "smtp": {
         "host": "smtp.gmail.com",
         "port": 587

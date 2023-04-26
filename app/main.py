@@ -71,6 +71,33 @@ def process_data(data) -> Dict[str, str]:
     return data
 
 
+def using_first_backup_email_address(
+    configs, receiver_email, subject, body, data, reason, alert_type, devices
+):
+    print("\n-- EXCEPTION: Daily user sending quota exceeded --")
+    print(f"-- Address email with problems: {sender_email} --")
+
+    sender_email = (
+        configs.get("email_addresses")
+        .get("senders")
+        .get("first_backup")  # Using another account to send data
+        .get("address")
+    )
+
+    print(f"New account to be used: {sender_email}")
+
+    send_email(
+        sender_email=sender_email,
+        receiver_email=receiver_email,
+        subject=subject,
+        body=body,
+        data=data,
+        reason=reason,
+        alert_type=alert_type,
+        devices=devices,
+    )
+
+
 def pre_send_email(
     body, reason, subject, current_value, configs, data, alert_type, devices
 ) -> Dict[str, Union[bool, str]]:
@@ -79,8 +106,10 @@ def pre_send_email(
     else:
         body += f"<br>Current value: {current_value} %"
 
-    sender_email = configs.get("email_addresses").get("sender")
-    receiver_email = configs.get("email_addresses").get("receiver")
+    sender_email = (
+        configs.get("email_addresses").get("senders").get("main").get("address")
+    )
+    receiver_email = configs.get("email_addresses").get("receiver").get("address")
 
     try:
         send_email(
@@ -94,6 +123,22 @@ def pre_send_email(
             devices=devices,
         )
     except Exception as e:
+        # TODO
+
+        # print(f"\nException in pre_send_email(...) > send_email(...): {e}")
+
+        # if "Daily user sending quota exceeded" in str(e):
+        #     using_first_backup_email_address(
+        #         configs,
+        #         receiver_email,
+        #         subject,
+        #         body,
+        #         data,
+        #         reason,
+        #         alert_type,
+        #         devices,
+        #     )
+
         message = {
             "error": True,
             "error_title": f"({devices.get('ip_address')}) Error trying to send an email",
@@ -315,17 +360,32 @@ def some_prestart_checks(devices, configs) -> None:
         print("File devices.json needs to be configured with at least one device")
         sys.exit(1)
 
-    if configs.get("app_password") == "to_be_completed":
-        print("app_password value needs to be generated using Google Account settings")
+    if (
+        configs.get("email_addresses").get("senders").get("main").get("app_password")
+        == "to_be_completed"
+    ):
+        print(
+            "app_password value for the main email address needs to be generated using Google Account settings and set in app/config.json"
+        )
         sys.exit(1)
 
-    if configs.get("email_addresses").get("sender") == "to_be_completed@gmail.com":
-        print("Sender email needs to be set in config.json")
+    if (
+        configs.get("email_addresses").get("senders").get("main").get("address")
+        == "to_be_completed@gmail.com"
+    ):
+        print("Main email sender address needs to be set in app/config.json")
         sys.exit(1)
 
-    if configs.get("email_addresses").get("receiver") == "to_be_completed@gmail.com":
-        print("Receiver email needs to be set in config.json")
+    if (
+        configs.get("email_addresses").get("receiver").get("address")
+        == "to_be_completed@gmail.com"
+    ):
+        print("A receiver email address needs to be set in app/config.json")
         sys.exit(1)
+
+    # OPTIONAL CHECKS
+    # address for the 1st backup account
+    # app_password for the 1st backup account
 
 
 def display_error(result) -> None:

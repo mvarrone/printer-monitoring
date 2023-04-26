@@ -37,7 +37,13 @@ def send_email(
 
     smtp_host = config_data.get("smtp").get("host")
     smtp_port = config_data.get("smtp").get("port")
-    app_password = config_data.get("app_password")
+
+    app_password = (
+        config_data.get("email_addresses")
+        .get("senders")
+        .get("main")
+        .get("app_password")
+    )
 
     with open("app/html/template.html", "r") as file:
         html = file.read()
