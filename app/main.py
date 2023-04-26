@@ -80,8 +80,15 @@ def using_first_backup_email_address(
     sender_email = (
         configs.get("email_addresses")
         .get("senders")
-        .get("first_backup")  # Using another account to send data
+        .get("first_backup")  # Using another account to send data: address
         .get("address")
+    )
+
+    app_password = (
+        configs.get("email_addresses")
+        .get("senders")
+        .get("first_backup")  # Using another account to send data: password
+        .get("app_password")
     )
 
     print(f"New account to be used: {sender_email}")

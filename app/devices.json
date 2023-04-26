@@ -22,5 +22,21 @@
         "path": "/etc/",
         "csv_filename": "mnt_info.csv",
         "brand": "brother"
+    },
+    {
+        "protocol": "http",
+        "ip_address": "192.168.1.201",
+        "port": 80,
+        "path": "/etc/",
+        "csv_filename": "mnt_info.csv",
+        "brand": "brother"
+    },
+    {
+        "protocol": "http",
+        "ip_address": "192.168.1.202",
+        "port": 80,
+        "path": "/etc/",
+        "csv_filename": "mnt_info.csv",
+        "brand": "brother"
     }
 ]
