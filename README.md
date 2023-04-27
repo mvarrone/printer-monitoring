@@ -1,6 +1,11 @@
-# Printer monitor app
+# Printer monitoring app
 
-Python app built to monitor network printers
+Python app built to monitor statistics from network printers and send emails to report them
+
+- It utilizes a three-level classification system consisting of WARNING, CRITICAL and ERROR categories
+- Implements parallel execution when connecting to devices
+- Implements parallel execution when sending emails
+- Supported printer brand at the moment: Brother
 
 ## Software used
 
@@ -184,7 +189,7 @@ cd app && python3 .\main.py
 A Python 3 script and a CSV file were provided. See [example](https://github.com/mvarrone/printer-monitoring/tree/main/app/example)
 Also, a `results.json` was recently provided
 
-* The intention of providing an example is for you to know how the data was originally downloaded from the printer device and how is processed in the python file
+* The intention of providing an example is for you to know how the data was originally downloaded from the printer device and how is processed in the Python file
 
 * I found it might be useful for cases where: 
     - there is no printer available in your network
