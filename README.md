@@ -60,8 +60,7 @@ Python app built to monitor statistics from network printers and send emails to 
 a) Clone repository into your machine
 
 ```md
-git clone https://github.com/mvarrone/printer-monitoring.git
-cd printer-monitoring
+git clone https://github.com/mvarrone/printer-monitoring.git && cd printer-monitoring
 ```
 
 b) Create a virtual environment and install dependencies
@@ -162,7 +161,8 @@ deactivate
             "ip_address": "192.168.1.5",
             "port": 80,
             "path": "etc",
-            "csv_filename": "mnt_info.csv"
+            "csv_filename": "mnt_info.csv",
+            "brand": "brother"
         }
     ]
     ```
