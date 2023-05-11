@@ -3,7 +3,7 @@ import csv
 import math
 import sys
 import time
-from typing import Dict, List, Tuple, Union
+from typing import Dict, List, Union
 
 import requests
 from utils import get_configurations, get_devices, get_supported_brands, send_email
@@ -159,7 +159,7 @@ def pre_send_email(
 
 
 def check_remaining_toner_level(data, configs, devices) -> Dict[str, Union[bool, str]]:
-    printer_brand = devices.get("brand")
+    printer_brand = devices.get("brand").lower()
     printer_ip_address = devices.get("ip_address")
 
     brand_data = get_supported_brands(f"app/supported_brands/{printer_brand}.json")
@@ -228,7 +228,7 @@ def check_remaining_toner_level(data, configs, devices) -> Dict[str, Union[bool,
 def check_remaining_drum_unit_level(
     data, configs, devices
 ) -> Dict[str, Union[bool, str]]:
-    printer_brand = devices.get("brand")
+    printer_brand = devices.get("brand").lower()
     printer_ip_address = devices.get("ip_address")
 
     brand_data = get_supported_brands(f"app/supported_brands/{printer_brand}.json")
@@ -298,7 +298,7 @@ def check_remaining_drum_unit_level(
 def check_remaining_life_drum_unit_level(
     data, configs, devices
 ) -> Dict[str, Union[bool, str]]:
-    printer_brand = devices.get("brand")
+    printer_brand = devices.get("brand").lower()
     printer_ip_address = devices.get("ip_address")
 
     brand_data = get_supported_brands(f"app/supported_brands/{printer_brand}.json")

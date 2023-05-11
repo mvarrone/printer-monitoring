@@ -17,7 +17,7 @@ def get_configurations() -> Dict[str, Union[str, int]]:
     return configs
 
 
-def get_supported_brands(filepath) -> Dict[str, Union[str, int]]:
+def get_supported_brands(filepath) -> Dict[str, Union[str, int]]:   
     try:
         with open(filepath, "r") as file:
             brand_data = json.load(file)
